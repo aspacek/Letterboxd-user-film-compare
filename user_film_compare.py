@@ -1,8 +1,15 @@
 import requests
 import sys
+import datetime
 
-########################
-# The similarity system:
+##
+## Written by aspacek, March 2020
+##
+
+#########################
+# The similarity systems:
+#
+# SYSTEM = 1
 # Points are assigned based on difference in ratings,
 # With 1 being completely different and 10 being exactly the same:
 # Difference - Points
@@ -16,6 +23,36 @@ import sys
 #     3.5    -   3
 #     4.0    -   2
 #     4.5    -   1
+#
+# SYSTEM = 2
+# Normal distribution
+# Go to http://dev.theomader.com/gaussian-kernel-calculator/, enter sigma=1.5, size=13 (so that it will max on 1.5-1 gap)
+# Weights: 0.000116 0.001227 0.008466 0.037976 0.110867 0.210789 0.261121 0.210789 0.110867 0.037976 0.008466 0.001227 0.000116
+# Correspond to the gaps between:
+#          4.5-4    4-3.5    3.5-3    3-2.5    2.5-2    2-1.5    1.5-1    1-0.5    0.5-0    Not Used-->
+# So we have: 0.000116 0.001227 0.008466 0.037976 0.110867 0.210789 0.261121 0.210789 0.110867
+# Sum = 0.952218, so multiply by 1/0.952218=1.050179 to get sum of 1
+# Now: 1.21820764e-04, 1.28856963e-03, 8.89081541e-03, 3.98815977e-02, 1.16430195e-01, 2.21366181e-01, 2.74223791e-01, 2.21366181e-01, 1.16430195e-01
+# Finally, to preserve a max of 10 (which is a gap of 10/9=1.11111), we multiply by 10:
+# 0.001218, 0.01289, 0.08891, 0.3988, 1.164, 2.214, 2.742, 2.214, 1.164
+#     0.0    -   10.0
+#     0.5    -   8.836
+#     1.0    -   6.622
+#     1.5    -   3.880
+#     2.0    -   1.666
+#     2.5    -   0.5018
+#     3.0    -   0.1030
+#     3.5    -   0.01411
+#     4.0    -   0.001218
+#     4.5    -   0.0
+#
+# SYSTEM = 3
+# Manually changing points gaps to try and make it a good spread (aspacek)
+#
+# SYSTEM = 4
+# /u/d_anda from reddit's recommended point spread
+#
+
 ########################
 
 ############################################################
@@ -30,74 +67,74 @@ def findstrings(substring,string):
 
 ##############################################
 # Function that computes the similarity score:
-def similarity(i):
-	switcher={
-		0.0:10,
-		0.5:9,
-		1.0:8,
-		1.5:7,
-		2.0:6,
-		2.5:5,
-		3.0:4,
-		3.5:3,
-		4.0:2,
-		4.5:1,
-	}
+def similarity(i,system):
+	if system == '1':
+		switcher={
+			0.0:10,
+			0.5:9,
+			1.0:8,
+			1.5:7,
+			2.0:6,
+			2.5:5,
+			3.0:4,
+			3.5:3,
+			4.0:2,
+			4.5:1,
+		}
+	elif system == '2':
+		switcher={
+			0.0:10.0,
+			0.5:8.836,
+			1.0:6.622,
+			1.5:3.880,
+			2.0:1.666,
+			2.5:0.5018,
+			3.0:0.1030,
+			3.5:0.01411,
+			4.0:0.001218,
+			4.5:0.0,
+		}
+	else:
+		sys.exit("System option chosen isn't available")
 	return switcher.get(i,"Error in rating difference")
 
 ##############################################
 # Function to grab a user's films and ratings:
 def userfilms(user):
 
-	# The base url of each user's film ratings:
+	# The base url of the user's film ratings:
 	url = 'https://letterboxd.com/'+user+'/films/ratings/'
 	# Grab source code for first ratings page:
 	r = requests.get(url)
 	source = r.text
 	
-	# Find the number of ratings pages:
-	# First find the start of the number of pages:
-	length = len('/'+user+'/films/ratings/page/')
-	prepages = list(findstrings('/'+user+'/films/ratings/page/',source))
-	prepages = prepages[-1]+length
-	# Then find the end:
-	postpages = source.find('/"',prepages+1)
-	# The number is found between:
-	pages = int(source[prepages:postpages])
-	
-	# Loop through all pages and grab all the film titles:
-	# Initialize results:
-	films = []
-	ratings = []
-	
-	# Start on page 1:
-	# Find the location of the start of each film title:
-	length = len('data-film-slug="/film/')
-	prefilms = list(findstrings('data-film-slug="/film/',source))
-	prefilms = [value+length for value in prefilms]
-	# Find the location of the end of each film title, and get the titles:
-	for value in prefilms:
-		end = source.find('/"',value)
-		film = source[value:end]
-		films = films+[film]
-	# Do the same for ratings:
-	# Find the location of the start of each rating:
-	length = len('rating rated-')
-	preratings = list(findstrings('rating rated-',source))
-	preratings = [value+length for value in preratings]
-	# Find the location of the end of each rating, and get the ratings:
-	for value in preratings:
-		end = source.find('">',value)
-		rating = source[value:end]
-		ratings = ratings+[rating]
-	
-	# Now loop through the rest of the pages:
-	for page in range(pages-1):
-		# Start on page 2:
-		page = str(page + 2)
-		# Grab source code of the page:
-		r = requests.get(url+'page/'+page+'/')
-		source = r.text
+	# Check if there are any ratings:
+	if source.find('No ratings yet') != -1:
+		films = -1
+		ratings = -1
+	else:
+
+		# Find the number of ratings pages:
+		# First check if there's only one page:
+		pageflag = 0
+		if source.find('/'+user+'/films/ratings/page/') == -1:
+			pageflag = 1
+		else:
+			# First find the start of the number of pages:
+			length = len('/'+user+'/films/ratings/page/')
+			prepages = list(findstrings('/'+user+'/films/ratings/page/',source))
+			prepages = prepages[-1]+length
+			# Then find the end:
+			postpages = source.find('/"',prepages+1)
+			# The number is found between:
+			pages = int(source[prepages:postpages])
+		
+		# Loop through all pages and grab all the film titles:
+		# Initialize results:
+		films = []
+		ratings = []
+		
+		# Start on page 1:
 		# Find the location of the start of each film title:
 		length = len('data-film-slug="/film/')
 		prefilms = list(findstrings('data-film-slug="/film/',source))
@@ -117,10 +154,38 @@ def userfilms(user):
 			end = source.find('">',value)
 			rating = source[value:end]
 			ratings = ratings+[rating]
-	
-	# Make sure the lengths match:
-	if len(films) != len(ratings):
-		sys.exit("Number of films does not match number of ratings")
+		
+		# Now loop through the rest of the pages:
+		if pageflag == 0:
+			for page in range(pages-1):
+				# Start on page 2:
+				page = str(page + 2)
+				# Grab source code of the page:
+				r = requests.get(url+'page/'+page+'/')
+				source = r.text
+				# Find the location of the start of each film title:
+				length = len('data-film-slug="/film/')
+				prefilms = list(findstrings('data-film-slug="/film/',source))
+				prefilms = [value+length for value in prefilms]
+				# Find the location of the end of each film title, and get the titles:
+				for value in prefilms:
+					end = source.find('/"',value)
+					film = source[value:end]
+					films = films+[film]
+				# Do the same for ratings:
+				# Find the location of the start of each rating:
+				length = len('rating rated-')
+				preratings = list(findstrings('rating rated-',source))
+				preratings = [value+length for value in preratings]
+				# Find the location of the end of each rating, and get the ratings:
+				for value in preratings:
+					end = source.find('">',value)
+					rating = source[value:end]
+					ratings = ratings+[rating]
+		
+		# Make sure the lengths match:
+		if len(films) != len(ratings):
+			sys.exit("Number of films does not match number of ratings")
 
 	# Return the results:
 	return films,ratings
@@ -226,16 +291,22 @@ def filmmatch(films1,ratings1,films2,ratings2):
 			del films2[0]
 			del ratings2[0]
 
+	# If no matches found:
+	if len(finalfilms) == 0 or len(finalratings1) == 0 or len(finalratings2) == 0:
+		finalfilms = -1
+		finalratings1 = -1
+		finalratings2 = -1
+
 	# Return the results
 	return finalfilms,finalratings1,finalratings2
 
 ##############################################
 # Function to compute final similarity scores:
-def scoring(finalfilms,finalratings1,finalratings2):
+def scoring(finalfilms,finalratings1,finalratings2,system):
 	finalpoints = []
 	for i in range(len(finalfilms)):
 		diff = abs(int(finalratings1[i])-int(finalratings2[i]))/2.0
-		points = similarity(diff)
+		points = similarity(diff,system)
 		finalpoints = finalpoints+[points]
 	result = sum(finalpoints)/len(finalpoints)
 	return result
@@ -244,42 +315,67 @@ def scoring(finalfilms,finalratings1,finalratings2):
 #### START MAIN PROGRAM ####
 ############################
 
-# Beginning text:
+# Beginning text and timing:
 print('\nNote: each user takes about 30 seconds to process.')
 print('So, comparing two users takes about 1 minute.')
 print('When comparing to following or followers, here are some estimations:')
 print('10 users = 5 minutes')
 print('100 users = 50 minutes')
 print('1000 users = 8 hours')
+print('\nSystems:')
+print('1 = even difference points between 1 and 10')
+print('2 = normal distribution in point differences with sigma=1.5 peaking on difference between 1 and 1.5')
+starttime = datetime.datetime.now()
+times = []
 
 # The two users being compared, or if all friends are being compared:
 user1 = input(f"\nLetterboxd Username 1:\n")
 user2 = input(f"\nLetterboxd Username 2, or 'following' or 'followers':\n")
+system = input(f"\nSystem:\n")
 
 # If just two users are being compared:
 if user2 != 'following' and user2 != 'followers':
 	print('\nThe users being compared are '+user1+' and '+user2+'\n')
+	flag = 0
 	
 	# Working on user1:
 	print('Grabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(user1)
+	if films1 == -1 or ratings1 == -1:
+		print(user1+' has no ratings!\n')
+		flag = 1
 	
 	# Working on user2:
 	print('Grabbing all film ratings from '+user2+'\n')
 	films2,ratings2 = userfilms(user2)
+	if films2 == -1 or ratings2 == -1:
+		print(user2+' has no ratings!\n')
+		flag = 1
 	
 	# Find all matching films:
-	print('Finding matching films\n')
-	oglength1 = len(films1)
-	oglength2 = len(films2)
-	finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
-	print(user1+' ratings: '+str(oglength1))
-	print(user2+' ratings: '+str(oglength2))
-	print('matched films: '+str(len(finalfilms))+'\n')
+	if flag == 0:
+		print('Finding matching films\n')
+		oglength1 = len(films1)
+		oglength2 = len(films2)
+		finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
+		if finalfilms == -1 or finalratings1 == -1 or finalratings2 == -1:
+			finalfilms = []
+		print(user1+' ratings: '+str(oglength1))
+		print(user2+' ratings: '+str(oglength2))
+		print('matched films: '+str(len(finalfilms))+'\n')
 
-	# Get the similarity score and print results:
-	results = scoring(finalfilms,finalratings1,finalratings2)
-	print('RESULTS = '+str(results)+'\n')
+		# Get the similarity score and print results:
+		if len(finalfilms) > 0:
+			results = scoring(finalfilms,finalratings1,finalratings2,system)
+			print('RESULTS = '+str(results)+'\n')
+		else:
+			print('No film matches found.\n')
+	else:
+		print('No films to match.\n')
+
+	# Print final timing:
+	totaltime = datetime.datetime.now()-starttime
+	print('Total time = '+str(totaltime)+'\n')
 
 # Else go through following or followers
 else:
@@ -290,20 +386,59 @@ else:
 	else:
 		print('\nGrabbing all users that follow '+user1+'\n')
 	users = userfollow(user1,user2)
+	print('There are '+str(len(users))+'\n')
 
-	# Compute similarity score for all users:
+	# Check if all or some should be computed:
+	tocompute = input(f"\nChoose a number to compute:\n")
+	if int(tocompute) >= 0 and int(tocompute) <= len(users):
+		users = users[:tocompute]
+	else:
+		sys.exit("Invalid number entered.")
+
+	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
 	print('Grabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(user1)
+	if films1 == -1 or ratings1 == -1:
+		sys.exit("User 1 does not have any ratings.")
+	oglength1 = len(films1)
 	# Initialize results:
 	scores = []
+	loopstarttime = datetime.datetime.now()
 	for i in range(len(users)):
 		print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
+		flag = 0
 		films2,ratings2 = userfilms(users[i])
-		finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
-		print(len(finalfilms))
-		results = scoring(finalfilms,finalratings1,finalratings2)
-		scores = scores+[results]
+		if films2 == -1 or ratings2 == -1:
+			print(users[i]+' has no ratings.\n')
+			flag = 1
+		if flag == 0:
+			oglength2 = len(films2)
+			newfilms1 = [value for value in films1]
+			newratings1 = [value for value in ratings1]
+			finalfilms,finalratings1,finalratings2 = filmmatch(newfilms1,newratings1,films2,ratings2)
+			if finalfilms == -1 or finalratings1 == -1 or finalratings2 == -1:
+				finalfilms = []
+			if len(finalfilms) > 0:
+				results = scoring(finalfilms,finalratings1,finalratings2,system)
+				scores = scores+[results]
+			else:
+				scores = scores+[-1]
+			print(user1+' ratings: '+str(oglength1))
+			print(users[i]+' ratings: '+str(oglength2))
+			print('matched films: '+str(len(finalfilms)))
+			if len(finalfilms) > 0:
+				print('compatibility: '+str(results))
+			else:
+				print('No film matches found.')
+			elapsedtime = datetime.datetime.now()-starttime
+			print('time elapsed = '+str(elapsedtime))
+			loopelapsedtime = datetime.datetime.now()-loopstarttime
+			timeperloop = loopelapsedtime/(i+1)
+			estimatedtime = (len(users)-(i+1))*timeperloop
+			print('estimated time remaining = '+str(estimatedtime)+'\n')
+		else:
+			scores = scores+[-1]
 
 	# Sort all the scores:
 	sortedusers = [name for number,name in sorted(zip(scores,users))]
@@ -315,3 +450,7 @@ else:
 	print('Comparing '+user1+' '+user2+'\n')
 	for i in range(len(users)):
 		print(users[i]+' -- '+str(scores[i]))
+
+	# Print final timing:
+	totaltime = str(datetime.datetime.now()-starttime)
+	print('\nTotal time = '+totaltime+'\n')

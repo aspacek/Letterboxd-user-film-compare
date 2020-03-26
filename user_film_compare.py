@@ -48,9 +48,29 @@ import datetime
 #
 # SYSTEM = 3
 # Manually changing points gaps to try and make it a good spread (aspacek)
+#     0.0    -   10
+#     0.5    -   8.5
+#     1.0    -   6.5
+#     1.5    -   4
+#     2.0    -   2.5
+#     2.5    -   1.5
+#     3.0    -   1
+#     3.5    -   0.5
+#     4.0    -   0.25
+#     4.5    -   0
 #
 # SYSTEM = 4
 # /u/d_anda from reddit's recommended point spread
+#     0.0    -   10
+#     0.5    -   8
+#     1.0    -   6
+#     1.5    -   5
+#     2.0    -   4
+#     2.5    -   3
+#     3.0    -   2
+#     3.5    -   1
+#     4.0    -   0.5
+#     4.5    -   0
 #
 
 ########################
@@ -93,6 +113,32 @@ def similarity(i,system):
 			3.5:0.01411,
 			4.0:0.001218,
 			4.5:0.0,
+		}
+	elif system == '3':
+		switcher={
+			0.0:10,
+			0.5:8.5,
+			1.0:6.5,
+			1.5:4,
+			2.0:2.5,
+			2.5:1.5,
+			3.0:1,
+			3.5:0.5,
+			4.0:0.25,
+			4.5:0,
+		}
+	elif system == '4':
+		switcher={
+			0.0:10,
+			0.5:8,
+			1.0:6,
+			1.5:5,
+			2.0:4,
+			2.5:3,
+			3.0:2,
+			3.5:1,
+			4.0:0.5,
+			4.5:0,
 		}
 	else:
 		sys.exit("System option chosen isn't available")
@@ -386,18 +432,18 @@ else:
 	else:
 		print('\nGrabbing all users that follow '+user1+'\n')
 	users = userfollow(user1,user2)
-	print('There are '+str(len(users))+'\n')
+	print('There are '+str(len(users)))
 
 	# Check if all or some should be computed:
 	tocompute = input(f"\nChoose a number to compute:\n")
 	if int(tocompute) >= 0 and int(tocompute) <= len(users):
-		users = users[:tocompute]
+		users = users[:int(tocompute)]
 	else:
 		sys.exit("Invalid number entered.")
 
 	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
-	print('Grabbing all film ratings from '+user1+'\n')
+	print('\nGrabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(user1)
 	if films1 == -1 or ratings1 == -1:
 		sys.exit("User 1 does not have any ratings.")
@@ -436,7 +482,12 @@ else:
 			loopelapsedtime = datetime.datetime.now()-loopstarttime
 			timeperloop = loopelapsedtime/(i+1)
 			estimatedtime = (len(users)-(i+1))*timeperloop
-			print('estimated time remaining = '+str(estimatedtime)+'\n')
+			times = times+[estimatedtime+elapsedtime]
+			avgtime = sum(times,datetime.timedelta())/len(times)
+			if i == len(users)-1:
+				print('estimated time remaining = '+str(elapsedtime-elapsedtime)+'\n')
+			else:
+				print('estimated time remaining = '+str(avgtime-elapsedtime)+'\n')
 		else:
 			scores = scores+[-1]
 

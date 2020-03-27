@@ -73,16 +73,16 @@ import datetime
 #     4.5    -   0
 #
 # SYSTEM = 5
-# The highest points start at 10 and then get halved for each greater difference
+# The highest points start at 10, then gets divided by 1.1, then 1.2, then 1.3, etc.
 #     0.0    -   10
-#     0.5    -   5
-#     1.0    -   2.5
-#     1.5    -   1.25
-#     2.0    -   0.625
-#     2.5    -   0.3125
-#     3.0    -   0.15625
-#     3.5    -   0.078125
-#     4.0    -   0.0390625
+#     0.5    -   9.09
+#     1.0    -   7.58
+#     1.5    -   5.83
+#     2.0    -   4.16
+#     2.5    -   2.78
+#     3.0    -   1.73
+#     3.5    -   1.02
+#     4.0    -   0.57
 #     4.5    -   0
 
 ########################
@@ -155,14 +155,14 @@ def similarity(i,system):
 	elif system == '5':
 		switcher={
 			0.0:10.0,
-			0.5:5.0,
-			1.0:2.5,
-			1.5:1.25,
-			2.0:0.625,
-			2.5:0.3125,
-			3.0:0.15625,
-			3.5:0.078125,
-			4.0:0.0390625,
+			0.5:7.14,
+			1.0:5.10,
+			1.5:3.64,
+			2.0:2.60,
+			2.5:1.86,
+			3.0:1.33,
+			3.5:0.95,
+			4.0:0.68,
 			4.5:0.0,
 		}
 	else:
@@ -508,8 +508,8 @@ else:
 			elapsedtime = datetime.datetime.now()-starttime
 			print('time elapsed = '+str(elapsedtime))
 			loopelapsedtime = datetime.datetime.now()-loopstarttime
-			timeperloop = loopelapsedtime/(i+1)
-			estimatedtime = (len(users)-(i+1))*timeperloop
+			timeperloop = loopelapsedtime/(i+1.0)
+			estimatedtime = (len(users)-(i+1.0))*timeperloop
 			times = times+[estimatedtime+elapsedtime]
 			avgtime = sum(times,datetime.timedelta())/len(times)
 			if i == len(users)-1:
@@ -527,9 +527,12 @@ else:
 
 	# Print out results:
 	print('Comparing '+user1+' '+user2+'\n')
-	for i in range(len(users)):
-		print(users[i]+' -- '+str(scores[i]))
+	for i in range(len(sortedusers)):
+		print(sortedusers[i]+' -- '+str(scores[i]))
 
 	# Print final timing:
 	totaltime = str(datetime.datetime.now()-starttime)
 	print('\nTotal time = '+totaltime+'\n')
+
+	print(sortedusers)
+	print(scores)

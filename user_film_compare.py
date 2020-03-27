@@ -72,6 +72,18 @@ import datetime
 #     4.0    -   0.5
 #     4.5    -   0
 #
+# SYSTEM = 5
+# The highest points start at 10 and then get halved for each greater difference
+#     0.0    -   10
+#     0.5    -   5
+#     1.0    -   2.5
+#     1.5    -   1.25
+#     2.0    -   0.625
+#     2.5    -   0.3125
+#     3.0    -   0.15625
+#     3.5    -   0.078125
+#     4.0    -   0.0390625
+#     4.5    -   0
 
 ########################
 
@@ -139,6 +151,19 @@ def similarity(i,system):
 			3.5:1,
 			4.0:0.5,
 			4.5:0,
+		}
+	elif system == '5':
+		switcher={
+			0.0:10.0,
+			0.5:5.0,
+			1.0:2.5,
+			1.5:1.25,
+			2.0:0.625,
+			2.5:0.3125,
+			3.0:0.15625,
+			3.5:0.078125,
+			4.0:0.0390625,
+			4.5:0.0,
 		}
 	else:
 		sys.exit("System option chosen isn't available")
@@ -371,6 +396,9 @@ print('1000 users = 8 hours')
 print('\nSystems:')
 print('1 = even difference points between 1 and 10')
 print('2 = normal distribution in point differences with sigma=1.5 peaking on difference between 1 and 1.5')
+print('3 = manual distribition in point differences by aspacek')
+print('4 = manual distribution in point differences by /u/d_anda')
+print('5 = max points start at 10 and then are halved for each larger difference')
 starttime = datetime.datetime.now()
 times = []
 

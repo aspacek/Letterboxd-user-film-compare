@@ -1,0 +1,36 @@
+# This is a basic workflow to help you get started with Actions.
+
+# Name: CI (Continuous Integration)
+name: CI
+
+# Controls when the action will run.
+# This will run on 0th minute, 10th hour (UTC) = 4am MDT, every day of every month, Sun-Sat.
+on:
+  schedule:
+    - cron: "0 10 * * 0-6"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a single job called "test"
+  test:
+
+    # The type of runner that the job will run on
+    runs-on: macos-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Checks-out the ability to run a python program here
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+
+    # Run the CI setup program:
+    #- run: python user_film_compare_CI_setup.py
+
+    # Run the new main file:
+    - run: python user_film_compare_CI.py

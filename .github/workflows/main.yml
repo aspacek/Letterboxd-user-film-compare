@@ -12,8 +12,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This workflow contains a single job called "test"
-  test:
+  # This workflow contains a job called "CIsetup"
+  CIsetup:
 
     # The type of runner that the job will run on
     runs-on: macos-latest
@@ -33,7 +33,25 @@ jobs:
         pip install -r requirements.txt
 
     # Run the CI setup program:
-    #- run: python user_film_compare_CI_setup.py
+    - run: python user_film_compare_CI_setup.py
+
+    # Save the output file:
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test
+        path: user_film_compare_CI.py
+
+  # Antother job called "CIrun"
+  CIrun:
+
+    # Needs output from earlier job:
+    needs: CIsetup
+    runs-on: macos-latest
+    steps:
+    # Grab the needed output:
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test
 
     # Run the new main file:
-    - run: python user_film_compare_CI.py
+    - run: python CI_test/user_film_compare_CI.py

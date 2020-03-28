@@ -28,6 +28,9 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
     # Run the CI setup program:
     #- run: python user_film_compare_CI_setup.py

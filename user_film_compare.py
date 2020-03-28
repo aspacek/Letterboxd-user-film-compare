@@ -405,10 +405,8 @@ print('100 users = 50 minutes')
 print('1000 users = 8 hours')
 print('\nSystems:')
 print('1 = even difference points between 1 and 10')
-print('2 = normal distribution in point differences with sigma=1.5 peaking on difference between 1 and 1.5')
-print('3 = manual distribition in point differences by aspacek')
-print('4 = manual distribution in point differences by /u/d_anda')
-print('5 = max points start at 10 and then are halved for each larger difference')
+print('2 = manual distribution in point differences by /u/d_anda')
+print('3 = complex point system by aes, giving different points depending on actual ratings')
 starttime = datetime.datetime.now()
 times = []
 

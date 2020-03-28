@@ -3,7 +3,8 @@ import sys
 import datetime
 
 ##
-## Written by aspacek, March 2020
+## Written by Alex Spacek
+## March 2020 - March 2020
 ##
 
 #########################

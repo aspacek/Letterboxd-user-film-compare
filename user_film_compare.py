@@ -25,42 +25,8 @@ import datetime
 #     4.5    -   1
 #
 # SYSTEM = 2
-# Normal distribution
-# Go to http://dev.theomader.com/gaussian-kernel-calculator/, enter sigma=1.5, size=13 (so that it will max on 1.5-1 gap)
-# Weights: 0.000116 0.001227 0.008466 0.037976 0.110867 0.210789 0.261121 0.210789 0.110867 0.037976 0.008466 0.001227 0.000116
-# Correspond to the gaps between:
-#          4.5-4    4-3.5    3.5-3    3-2.5    2.5-2    2-1.5    1.5-1    1-0.5    0.5-0    Not Used-->
-# So we have: 0.000116 0.001227 0.008466 0.037976 0.110867 0.210789 0.261121 0.210789 0.110867
-# Sum = 0.952218, so multiply by 1/0.952218=1.050179 to get sum of 1
-# Now: 1.21820764e-04, 1.28856963e-03, 8.89081541e-03, 3.98815977e-02, 1.16430195e-01, 2.21366181e-01, 2.74223791e-01, 2.21366181e-01, 1.16430195e-01
-# Finally, to preserve a max of 10 (which is a gap of 10/9=1.11111), we multiply by 10:
-# 0.001218, 0.01289, 0.08891, 0.3988, 1.164, 2.214, 2.742, 2.214, 1.164
-#     0.0    -   10.0
-#     0.5    -   8.836
-#     1.0    -   6.622
-#     1.5    -   3.880
-#     2.0    -   1.666
-#     2.5    -   0.5018
-#     3.0    -   0.1030
-#     3.5    -   0.01411
-#     4.0    -   0.001218
-#     4.5    -   0.0
-#
-# SYSTEM = 3
-# Manually changing points gaps to try and make it a good spread (aspacek)
-#     0.0    -   10
-#     0.5    -   8.5
-#     1.0    -   6.5
-#     1.5    -   4
-#     2.0    -   2.5
-#     2.5    -   1.5
-#     3.0    -   1
-#     3.5    -   0.5
-#     4.0    -   0.25
-#     4.5    -   0
-#
-# SYSTEM = 4
-# /u/d_anda from reddit's recommended point spread
+# /u/d_anda from reddit's recommended point spread:
+# Difference - Points
 #     0.0    -   10
 #     0.5    -   8
 #     1.0    -   6
@@ -72,7 +38,7 @@ import datetime
 #     4.0    -   0.5
 #     4.5    -   0
 #
-# SYSTEM = 5
+# SYSTEM = 3
 # This system takes the actual ratings into account.
 # Same ratings = 10 points
 # Rating of 5 = the best, so most important
@@ -162,34 +128,6 @@ def similarity(rating1,rating2,system):
 		return switcher.get(diff,"Error in rating difference")
 	elif system == '2':
 		switcher={
-			0.0:10.0,
-			0.5:8.836,
-			1.0:6.622,
-			1.5:3.880,
-			2.0:1.666,
-			2.5:0.5018,
-			3.0:0.1030,
-			3.5:0.01411,
-			4.0:0.001218,
-			4.5:0.0,
-		}
-		return switcher.get(diff,"Error in rating difference")
-	elif system == '3':
-		switcher={
-			0.0:10,
-			0.5:8.5,
-			1.0:6.5,
-			1.5:4,
-			2.0:2.5,
-			2.5:1.5,
-			3.0:1,
-			3.5:0.5,
-			4.0:0.25,
-			4.5:0,
-		}
-		return switcher.get(diff,"Error in rating difference")
-	elif system == '4':
-		switcher={
 			0.0:10,
 			0.5:8,
 			1.0:6,
@@ -202,7 +140,7 @@ def similarity(rating1,rating2,system):
 			4.5:0,
 		}
 		return switcher.get(diff,"Error in rating difference")
-	elif system == '5':
+	elif system == '3':
 		if rating1 == rating2:
 			if rating1 == 5.0:
 				result = 15.0

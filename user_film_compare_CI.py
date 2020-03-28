@@ -73,18 +73,63 @@ import datetime
 #     4.5    -   0
 #
 # SYSTEM = 5
-# The highest points start at 10, then gets divided by 1.1, then 1.2, then 1.3, etc.
-#     0.0    -   10
-#     0.5    -   9.09
-#     1.0    -   7.58
-#     1.5    -   5.83
-#     2.0    -   4.16
-#     2.5    -   2.78
-#     3.0    -   1.73
-#     3.5    -   1.02
-#     4.0    -   0.57
-#     4.5    -   0
-
+# This system takes the actual ratings into account.
+# Same ratings = 10 points
+# Rating of 5 = the best, so most important
+# So 5.0 to each lower rating = -3.0 points
+# 	5.0-4.5 = 7.0 pts
+# 	5.0-4.0 = 4.0 pts
+# 	5.0-3.5 = 1.0 pts
+# 	5.0-3.0 = -2.0 pts
+# 	5.0-2.5 = -5.0 pts
+# 	5.0-2.0 = -8.0 pts
+# 	5.0-1.5 = -11.0 pts
+# 	5.0-1.0 = -14.0 pts
+# 	5.0-0.5 = -17.0 pts
+# For 4.5 to each lower rating, -2.5 pts
+# 	4.5-4.0 = 7.5 pts
+# 	4.5-3.5 = 5.0 pts
+# 	4.5-3.0 = 2.5 pts
+# 	4.5-2.5 = 0.0 pts
+# 	4.5-2.0 = -2.5 pts
+# 	4.5-1.5 = -5.0 pts
+# 	4.5-1.0 = -7.5 pts
+# 	4.5-0.5 = -10.0 pts
+# For 4.0 to each lower rating, -2.0 pts
+# 	4.0-3.5 = 8.0 pts
+# 	4.0-3.0 = 6.0 pts
+# 	4.0-2.5 = 4.0 pts
+# 	4.0-2.0 = 2.0 pts
+# 	4.0-1.5 = 0.0 pts
+# 	4.0-1.0 = -2.0 pts
+# 	4.0-0.5 = -4.0 pts
+# For 3.5 to each lower rating, -1.5 pts
+# 	3.5-3.0 = 8.5 pts
+# 	3.5-2.5 = 7.0 pts
+# 	3.5-2.0 = 5.5 pts
+# 	3.5-1.5 = 4.0 pts
+# 	3.5-1.0 = 2.5 pts
+# 	3.5-0.5 = 1.0 pts
+# For 3.0 to each lower rating, -1.0 pts
+# 	3.0-2.5 = 9.0 pts
+# 	3.0-2.0 = 8.0 pts
+# 	3.0-1.5 = 7.0 pts
+# 	3.0-1.0 = 6.0 pts
+# 	3.0-0.5 = 5.0 pts
+# For 2.5 to each lower rating, -0.75 pts
+# 	2.5-2.0 = 9.25 pts
+# 	2.5-1.5 = 8.50 pts
+# 	2.5-1.0 = 7.75 pts
+# 	2.5-0.5 = 7.00 pts
+# For 2.0 to each lower rating, -0.5 pts
+# 	2.0-1.5 = 9.5 pts
+# 	2.0-1.0 = 9.0 pts
+# 	2.0-0.5 = 8.5 pts
+# For 1.5 to each lower rating, -0.5 pts
+# 	1.5-1.0 = 9.5 pts
+# 	1.5-0.5 = 9.0 pts
+# For 1.0 to each lower rating, -0.5 pts
+# 	1.0-0.5 = 9.5 pts
 ########################
 
 ############################################################
@@ -99,7 +144,8 @@ def findstrings(substring,string):
 
 ##############################################
 # Function that computes the similarity score:
-def similarity(i,system):
+def similarity(rating1,rating2,system):
+	diff = abs(rating1-rating2)
 	if system == '1':
 		switcher={
 			0.0:10,
@@ -113,6 +159,7 @@ def similarity(i,system):
 			4.0:2,
 			4.5:1,
 		}
+		return switcher.get(diff,"Error in rating difference")
 	elif system == '2':
 		switcher={
 			0.0:10.0,
@@ -126,6 +173,7 @@ def similarity(i,system):
 			4.0:0.001218,
 			4.5:0.0,
 		}
+		return switcher.get(diff,"Error in rating difference")
 	elif system == '3':
 		switcher={
 			0.0:10,
@@ -139,6 +187,7 @@ def similarity(i,system):
 			4.0:0.25,
 			4.5:0,
 		}
+		return switcher.get(diff,"Error in rating difference")
 	elif system == '4':
 		switcher={
 			0.0:10,
@@ -152,22 +201,38 @@ def similarity(i,system):
 			4.0:0.5,
 			4.5:0,
 		}
+		return switcher.get(diff,"Error in rating difference")
 	elif system == '5':
-		switcher={
-			0.0:10.0,
-			0.5:7.14,
-			1.0:5.10,
-			1.5:3.64,
-			2.0:2.60,
-			2.5:1.86,
-			3.0:1.33,
-			3.5:0.95,
-			4.0:0.68,
-			4.5:0.0,
-		}
+		if rating1 == rating2:
+			if rating1 == 5.0:
+				result = 15.0
+			elif rating1 == 4.5 or rating1 == 0.5:
+				result = 12.0
+			elif rating1 == 4.0 or rating1 == 1.0:
+				result = 10.5
+			else:
+				result = 10.0
+		else:
+			maxrating = max([rating1,rating2])
+			minrating = min([rating1,rating2])
+			if maxrating == 5.0:
+				gap = 3.0
+			elif maxrating == 4.5:
+				gap = 2.5
+			elif maxrating == 4.0:
+				gap = 2.0
+			elif maxrating == 3.5:
+				gap = 1.5
+			elif maxrating == 3.0:
+				gap = 1.0
+			elif maxrating == 2.5:
+				gap = 0.75
+			elif maxrating == 2.0 or maxrating == 1.5 or maxrating == 1.0:
+				gap = 0.5
+			result = 10.0-gap*(maxrating-minrating)/0.5
+		return result
 	else:
 		sys.exit("System option chosen isn't available")
-	return switcher.get(i,"Error in rating difference")
 
 ##############################################
 # Function to grab a user's films and ratings:
@@ -376,10 +441,16 @@ def filmmatch(films1,ratings1,films2,ratings2):
 def scoring(finalfilms,finalratings1,finalratings2,system):
 	finalpoints = []
 	for i in range(len(finalfilms)):
-		diff = abs(int(finalratings1[i])-int(finalratings2[i]))/2.0
-		points = similarity(diff,system)
+		rating1 = int(finalratings1[i])/2.0
+		rating2 = int(finalratings2[i])/2.0
+		points = similarity(rating1,rating2,system)
 		finalpoints = finalpoints+[points]
 	result = sum(finalpoints)/len(finalpoints)
+	# If the result is >10 or <0 for whatever reason, limit them to the extremes:
+	if result > 10.0:
+		result = 10.0
+	elif result < 0.0:
+		result = 0.0
 	return result
 
 ############################
@@ -405,7 +476,7 @@ times = []
 # The two users being compared, or if all friends are being compared:
 user1 = "moogic" #input(f"\nLetterboxd Username 1:\n")
 user2 = "blankments" #input(f"\nLetterboxd Username 2, or 'following' or 'followers':\n")
-system = "1" #input(f"\nSystem:\n")
+system = "5" #input(f"\nSystem:\n")
 
 # If just two users are being compared:
 if user2 != 'following' and user2 != 'followers':
@@ -463,7 +534,7 @@ else:
 	print('There are '+str(len(users)))
 
 	# Check if all or some should be computed:
-	tocompute = input(f"\nChoose a number to compute:\n")
+	tocompute = "10" #input(f"\nChoose a number to compute:\n")
 	if int(tocompute) >= 0 and int(tocompute) <= len(users):
 		users = users[:int(tocompute)]
 	else:

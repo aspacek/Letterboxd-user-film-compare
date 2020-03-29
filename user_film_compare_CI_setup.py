@@ -11,7 +11,7 @@ indata = indata.replace('user1 = input(f"\\nLetterboxd Username 1:\\n")','user1 
 indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'following\' or \'followers\':\\n")','user2 = "blankments"')
 
 # Add system choice:
-indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "5"')
+indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "3"')
 
 # Add number to compute:
 indata = indata.replace('tocompute = input(f"\\nChoose a number to compute:\\n")','tocompute = "10"')

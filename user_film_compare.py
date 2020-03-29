@@ -175,7 +175,7 @@ def similarity(rating1,rating2,system):
 			result = 10.0-gap*(maxrating-minrating)/0.5
 		return result
 	else:
-		sys.exit("System option chosen isn't available")
+		sys.exit("ERROR - in function 'similarity': System option chosen isn't available")
 
 ##############################################
 # Function to grab a user's films and ratings:
@@ -264,7 +264,7 @@ def userfilms(user):
 		
 		# Make sure the lengths match:
 		if len(films) != len(ratings):
-			sys.exit("Number of films does not match number of ratings")
+			sys.exit("ERROR - in function 'userfilms': Number of films does not match number of ratings")
 
 	# Return the results:
 	return films,ratings
@@ -482,14 +482,14 @@ else:
 	if int(tocompute) >= 0 and int(tocompute) <= len(users):
 		users = users[:int(tocompute)]
 	else:
-		sys.exit("Invalid number entered.")
+		sys.exit("ERROR - in 'else' of main program: Invalid number entered.")
 
 	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
 	print('\nGrabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(user1)
 	if films1 == -1 or ratings1 == -1:
-		sys.exit("User 1 does not have any ratings.")
+		sys.exit("ERROR - in 'else' of main program: User 1 does not have any ratings.")
 	oglength1 = len(films1)
 	# Initialize results:
 	scores = []

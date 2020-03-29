@@ -1,8 +1,8 @@
 import requests
 import sys
 from datetime import datetime
-import os.path
-from os import path
+#import os.path
+#from os import path
 import numpy as np
 import matplotlib.pyplot as plt
 import statistics

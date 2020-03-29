@@ -1,10 +1,11 @@
 import requests
 import sys
-import datetime
+from datetime import datetime
 import os.path
 from os import path
 import numpy as np
 import matplotlib.pyplot as plt
+import statistics
 
 ##
 ## Written by Alex Spacek
@@ -401,17 +402,18 @@ def scoring(finalfilms,finalratings1,finalratings2,system):
 ############################
 
 # Beginning text and timing:
-print('\nNote: each user takes about 30 seconds to process.')
+print('\n**Note**')
+print('Each user takes about 30 seconds to process.')
 print('So, comparing two users takes about 1 minute.')
 print('When comparing to following or followers, here are some estimations:')
-print('10 users = 5 minutes')
-print('100 users = 50 minutes')
-print('1000 users = 8 hours')
+print('      10 users = 5 minutes')
+print('     100 users = 1 hour')
+print('    1000 users = 8 hours')
 print('\nSystems:')
 print('1 = even difference points between 1 and 10')
 print('2 = manual distribution in point differences by reddit user /u/d_anda')
 print('3 = complex point system by aes, giving different points depending on actual ratings (RECOMMENDED)')
-starttime = datetime.datetime.now()
+starttime = datetime.now().timestamp()
 times = []
 
 # The two users being compared, or if all friends are being compared:
@@ -446,22 +448,24 @@ if user2 != 'following' and user2 != 'followers':
 		finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
 		if finalfilms == -1 or finalratings1 == -1 or finalratings2 == -1:
 			finalfilms = []
-		print(user1+' ratings: '+str(oglength1))
-		print(user2+' ratings: '+str(oglength2))
-		print('matched films: '+str(len(finalfilms))+'\n')
+		# Find longest username for a neat output:
+		longest = len(max([user1+' ratings:',user2+' ratings:','matched films:'],key=len))
+		print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
+		print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))
+		print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\n',longest=longest))
 
 		# Get the similarity score and print results:
 		if len(finalfilms) > 0:
 			results = scoring(finalfilms,finalratings1,finalratings2,system)
-			print('RESULTS = '+str(results)+'\n')
+			print('RESULTS = {:.3f}{}'.format(results,'\n'))
 		else:
 			print('No film matches found.\n')
 	else:
 		print('No films to match.\n')
 
 	# Print final timing:
-	totaltime = datetime.datetime.now()-starttime
-	print('Total time = '+str(totaltime)+'\n')
+	totaltime = datetime.now().timestamp()-starttime
+	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
 
 # Else go through following or followers
 else:
@@ -490,7 +494,7 @@ else:
 	oglength1 = len(films1)
 	# Initialize results:
 	scores = []
-	loopstarttime = datetime.datetime.now()
+	loopstarttime = datetime.now().timestamp()
 	for i in range(len(users)):
 		print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
 		flag = 0
@@ -510,24 +514,29 @@ else:
 				scores = scores+[results]
 			else:
 				scores = scores+[-1]
-			print(user1+' ratings: '+str(oglength1))
-			print(users[i]+' ratings: '+str(oglength2))
-			print('matched films: '+str(len(finalfilms)))
+			# Find longest username for a neat output:
+			longest = len(max([user1+' ratings:',users[i]+' ratings:','matched films:'],key=len))
+			print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
+			print('{:{longest}} {:d}'.format(users[i]+' ratings:',oglength2,longest=longest))
+			print('{:{longest}} {:d}'.format('matched films:',len(finalfilms),longest=longest))
 			if len(finalfilms) > 0:
-				print('compatibility: '+str(results))
+				print('compatibility: {:.3f}'.format(results))
 			else:
 				print('No film matches found.')
-			elapsedtime = datetime.datetime.now()-starttime
-			print('time elapsed = '+str(elapsedtime))
-			loopelapsedtime = datetime.datetime.now()-loopstarttime
+			elapsedtime = datetime.now().timestamp()-starttime
+			print('time elapsed (m) = {:.3f}'.format(elapsedtime/60.0))
+			loopelapsedtime = datetime.now().timestamp()-loopstarttime
 			timeperloop = loopelapsedtime/(i+1.0)
 			estimatedtime = (len(users)-(i+1.0))*timeperloop
 			times = times+[estimatedtime+elapsedtime]
-			avgtime = sum(times,datetime.timedelta())/len(times)
+			# Add 1 standard deviation to the average time to give a buffer:
+			avgtime = np.mean(times)+np.std(times)
+			# If the loop is done, no time remaining:
 			if i == len(users)-1:
-				print('estimated time remaining = '+str(elapsedtime-elapsedtime)+'\n')
+				print('estimated time remaining (m) = {:.3f}{}'.format(0.0,'\n'))
+			# Otherwise estimate time remaining:
 			else:
-				print('estimated time remaining = '+str(avgtime-elapsedtime)+'\n')
+				print('estimated time remaining (m) = {:.3f}{}'.format((avgtime-elapsedtime)/60.0,'\n'))
 		else:
 			scores = scores+[-1]
 
@@ -545,8 +554,8 @@ else:
 		print('{:{longest}} -- {}'.format(sortedusers[i],scores[i],longest=longest))
 
 	# Print final timing:
-	totaltime = str(datetime.datetime.now()-starttime)
-	print('\nTotal time = '+totaltime+'\n')
+	totaltime = datetime.now().timestamp()-starttime
+	print('{}Total time (m) = {:.3f}{}'.format('\n',totaltime/60.0,'\n'))
 
 	# Check if previous file exists for the current configuration:
 	newspread = 1

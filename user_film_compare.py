@@ -1,6 +1,10 @@
 import requests
 import sys
 import datetime
+import os.path
+from os import path
+import numpy as np
+import matplotlib.pyplot as plt
 
 ##
 ## Written by Alex Spacek
@@ -110,7 +114,7 @@ def findstrings(substring,string):
 		yield lastfound
 
 ##############################################
-# Function that computes the similarity score:
+# Functions that computes the similarity score:
 def similarity(rating1,rating2,system):
 	diff = abs(rating1-rating2)
 	if system == '1':
@@ -405,8 +409,8 @@ print('100 users = 50 minutes')
 print('1000 users = 8 hours')
 print('\nSystems:')
 print('1 = even difference points between 1 and 10')
-print('2 = manual distribution in point differences by /u/d_anda')
-print('3 = complex point system by aes, giving different points depending on actual ratings')
+print('2 = manual distribution in point differences by reddit user /u/d_anda')
+print('3 = complex point system by aes, giving different points depending on actual ratings (RECOMMENDED)')
 starttime = datetime.datetime.now()
 times = []
 
@@ -535,12 +539,56 @@ else:
 
 	# Print out results:
 	print('Comparing '+user1+' '+user2+'\n')
+	# Find longest username for a neat output:
+	longest = len(max(sortedusers,key=len))
 	for i in range(len(sortedusers)):
-		print(sortedusers[i]+' -- '+str(scores[i]))
+		print('{:{longest}} -- {}'.format(sortedusers[i],scores[i],longest=longest))
 
 	# Print final timing:
 	totaltime = str(datetime.datetime.now()-starttime)
 	print('\nTotal time = '+totaltime+'\n')
 
-	print(sortedusers)
-	print(scores)
+	# Check if previous file exists for the current configuration:
+	newspread = 1
+	if path.exists('Spreads/'+user1+'_'+user2+'_spread.txt'):
+		print('Previous spread found')
+		# Ask if new file should be written:
+		spreadchoice = input(f"\nCompute new spread and overwrite the previous? (y/n):\n")
+		print('')
+		if spreadchoice != "y":
+			newspread = 0
+	if newspread == 1:
+		# remove any "-1" values from the scores:
+		cutscores = []
+		cutusers = []
+		for i in range(len(scores)):
+			if scores[i] >= 0.0:
+				cutscores = cutscores+[scores[i]]
+				cutusers = cutusers+[sortedusers[i]]
+		spreadfile = open('Spreads/'+user1+'_'+user2+'_spread.txt','w')
+		bins = [0,1,2,3,4,5,6,7,8,9,10]
+		hist,bin_edges = np.histogram(cutscores,bins=bins)
+		midpoints = [value-0.5 for value in range(len(bins))[1:]]
+		for i in range(len(hist)):
+			spreadfile.write(str(midpoints[i])+' '+str(hist[i])+'\n')
+		plt.plot(midpoints,hist)
+		plt.xlabel('Compatibility Rating')
+		plt.ylabel('Number In Bin')
+		plt.savefig('Spreads/'+user1+'_'+user2+'_spread_plot.png')
+		spreadfile.close()
+
+	# Create output file, if necessary/wanted:
+	newout = 1
+	if path.exists('Output/'+user1+'_'+user2+'_output.txt'):
+		print('Previous output found')
+		# Ask if new file should be written:
+		outchoice = input(f"\nOverwrite the previous output? (y/n):\n")
+		print('')
+		if spreadchoice != "y":
+			newout = 0
+	if newout == 1:
+		outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')
+		for i in range(len(sortedusers)):
+			outfile.write('{:{longest}} {}{}'.format(sortedusers[i],scores[i],'\n',longest=longest))
+		# Close output file:
+		outfile.close()

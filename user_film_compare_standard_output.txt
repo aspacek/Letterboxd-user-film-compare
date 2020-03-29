@@ -26,7 +26,8 @@ nam3 = ['johandoornenbal', 'benson731', 'htetoowaiyan', 'digestedsilver', 'katel
 plt.plot(sys3)
 plt.show()
 
-hist,bin_edges = np.histogram(sys3)
+bins = [0,1,2,3,4,5,6,7,8,9,10]
+hist,bin_edges = np.histogram(sys3,bins=bins)
 width = (bin_edges[1]-bin_edges[0])/2.0
 plt.plot(bin_edges[1:]-width,hist)
 plt.show()

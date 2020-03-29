@@ -1,8 +1,7 @@
 import requests
 import sys
 from datetime import datetime
-import os.path
-from os import path
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import statistics
@@ -454,18 +453,18 @@ if user2 != 'following' and user2 != 'followers':
 		print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))
 		print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\n',longest=longest))
 
-		# Get the similarity score and print results:
-		if len(finalfilms) > 0:
-			results = scoring(finalfilms,finalratings1,finalratings2,system)
-			print('RESULTS = {:.3f}{}'.format(results,'\n'))
-		else:
-			print('No film matches found.\n')
-	else:
-		print('No films to match.\n')
-
-	# Print final timing:
-	totaltime = datetime.now().timestamp()-starttime
-	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
+#		# Get the similarity score and print results:
+#		if len(finalfilms) > 0:
+#			results = scoring(finalfilms,finalratings1,finalratings2,system)
+#			print('RESULTS = {:.3f}{}'.format(results,'\n'))
+#		else:
+#			print('No film matches found.\n')
+#	else:
+#		print('No films to match.\n')
+#
+#	# Print final timing:
+#	totaltime = datetime.now().timestamp()-starttime
+#	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
 
 # Else go through following or followers
 else:
@@ -559,7 +558,8 @@ else:
 
 	# Check if previous file exists for the current configuration:
 	newspread = 1
-	if path.exists('Spreads/'+user1+'_'+user2+'_spread.txt'):
+	spreadpath = Path('Spreads/'+user1+'_'+user2+'_spread.txt')
+	if spreadpath.exists():
 		print('Previous spread found')
 		# Ask if new file should be written:
 		spreadchoice = input(f"\nCompute new spread and overwrite the previous? (y/n):\n")
@@ -588,7 +588,8 @@ else:
 
 	# Create output file, if necessary/wanted:
 	newout = 1
-	if path.exists('Output/'+user1+'_'+user2+'_output.txt'):
+	outpath = Path('Output/'+user1+'_'+user2+'_output.txt')
+	if outpath.exists():
 		print('Previous output found')
 		# Ask if new file should be written:
 		outchoice = input(f"\nOverwrite the previous output? (y/n):\n")

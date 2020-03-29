@@ -6,10 +6,6 @@ indata = infile.read()
 # Get output file ready:
 outfile = open("user_film_compare_CI.py","w")
 
-# Remove os stuff
-indata = indata.replace('import os.path','#import os.path')
-indata = indata.replace('from os import path','#from os import path')
-
 # Add user names:
 indata = indata.replace('user1 = input(f"\\nLetterboxd Username 1:\\n")','user1 = "moogic"')
 indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'following\' or \'followers\':\\n")','user2 = "blankments"')

@@ -10,7 +10,7 @@ This Python program is a project attempting to compare user film ratings on Lett
 - Comparing a given user with either the people they are following, or the people following them
 
 To run, you just need the file "user_film_compare.py"
->> python user_film_compare.py
+`python user_film_compare.py`
 
 Written using python 3.7.
 

@@ -453,9 +453,9 @@ if user2 != 'following' and user2 != 'followers':
 		print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))
 		print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\n',longest=longest))
 
-#		# Get the similarity score and print results:
-#		if len(finalfilms) > 0:
-#			results = scoring(finalfilms,finalratings1,finalratings2,system)
+		# Get the similarity score and print results:
+		if len(finalfilms) > 0:
+			results = scoring(finalfilms,finalratings1,finalratings2,system)
 #			print('RESULTS = {:.3f}{}'.format(results,'\n'))
 #		else:
 #			print('No film matches found.\n')

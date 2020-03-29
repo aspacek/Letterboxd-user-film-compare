@@ -6,6 +6,7 @@ name: CI
 # Controls when the action will run.
 # This will run on 0th minute, 10th hour (UTC) = 4am MDT, every day of every month, Sun-Sat.
 on:
+  push:
   schedule:
     - cron: "0 10 * * 0-6"
 

@@ -1,8 +1,7 @@
 import requests
 import sys
 from datetime import datetime
-#import os.path
-#from os import path
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import statistics
@@ -176,7 +175,7 @@ def similarity(rating1,rating2,system):
 			result = 10.0-gap*(maxrating-minrating)/0.5
 		return result
 	else:
-		sys.exit("System option chosen isn't available")
+		sys.exit("ERROR - in function 'similarity': System option chosen isn't available")
 
 ##############################################
 # Function to grab a user's films and ratings:
@@ -265,7 +264,7 @@ def userfilms(user):
 		
 		# Make sure the lengths match:
 		if len(films) != len(ratings):
-			sys.exit("Number of films does not match number of ratings")
+			sys.exit("ERROR - in function 'userfilms': Number of films does not match number of ratings")
 
 	# Return the results:
 	return films,ratings
@@ -419,7 +418,7 @@ times = []
 # The two users being compared, or if all friends are being compared:
 user1 = "moogic"
 user2 = "blankments"
-system = "5"
+system = "3"
 
 # If just two users are being compared:
 if user2 != 'following' and user2 != 'followers':
@@ -457,15 +456,15 @@ if user2 != 'following' and user2 != 'followers':
 		# Get the similarity score and print results:
 		if len(finalfilms) > 0:
 			results = scoring(finalfilms,finalratings1,finalratings2,system)
-			print('RESULTS = {:.3f}{}'.format(results,'\n'))
-		else:
-			print('No film matches found.\n')
-	else:
-		print('No films to match.\n')
-
-	# Print final timing:
-	totaltime = datetime.now().timestamp()-starttime
-	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
+#			print('RESULTS = {:.3f}{}'.format(results,'\n'))
+#		else:
+#			print('No film matches found.\n')
+#	else:
+#		print('No films to match.\n')
+#
+#	# Print final timing:
+#	totaltime = datetime.now().timestamp()-starttime
+#	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
 
 # Else go through following or followers
 else:
@@ -483,14 +482,14 @@ else:
 	if int(tocompute) >= 0 and int(tocompute) <= len(users):
 		users = users[:int(tocompute)]
 	else:
-		sys.exit("Invalid number entered.")
+		sys.exit("ERROR - in 'else' of main program: Invalid number entered.")
 
 	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
 	print('\nGrabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(user1)
 	if films1 == -1 or ratings1 == -1:
-		sys.exit("User 1 does not have any ratings.")
+		sys.exit("ERROR - in 'else' of main program: User 1 does not have any ratings.")
 	oglength1 = len(films1)
 	# Initialize results:
 	scores = []
@@ -559,7 +558,8 @@ else:
 
 	# Check if previous file exists for the current configuration:
 	newspread = 1
-	if path.exists('Spreads/'+user1+'_'+user2+'_spread.txt'):
+	spreadpath = Path('Spreads/'+user1+'_'+user2+'_spread.txt')
+	if spreadpath.exists():
 		print('Previous spread found')
 		# Ask if new file should be written:
 		spreadchoice = "n"
@@ -588,7 +588,8 @@ else:
 
 	# Create output file, if necessary/wanted:
 	newout = 1
-	if path.exists('Output/'+user1+'_'+user2+'_output.txt'):
+	outpath = Path('Output/'+user1+'_'+user2+'_output.txt')
+	if outpath.exists():
 		print('Previous output found')
 		# Ask if new file should be written:
 		outchoice = "n"

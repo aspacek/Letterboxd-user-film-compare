@@ -1,1 +1,14 @@
 .DS_Store
+
+# Everything in Output folder, but keep folder:
+Output/*
+!Output/.gitkeep
+
+# Everything in Spreads folder, but keep folder:
+Spreads/*
+!Spreads/.gitkeep
+
+# Everything in UserFilms folder, but keep folder:
+UserFilms/*
+!UserFilms/.gitkeep
+

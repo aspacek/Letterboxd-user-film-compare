@@ -444,7 +444,7 @@ times = []
 # The two users being compared, or if all friends are being compared:
 user1 = "moogic"
 user2 = "blankments"
-system = "1"
+system = "2"
 useratings = "use"
 
 # If just two users are being compared:
@@ -476,7 +476,7 @@ if user2 != 'following' and user2 != 'followers':
 			finalfilms = []
 		# Find longest username for a neat output:
 		longest = len(max([user1+' ratings:',user2+' ratings:','matched films:'],key=len))
-		outputfile = open('CI/user_film_compare_CI_user_user_1.txt','w')
+		outputfile = open('CI/user_film_compare_CI_user_user_2.txt','w')
 		outputfile.write('{} {:d}{}'.format(user1+' ratings:',oglength1,'\n'))
 		outputfile.write('{} {:d}{}'.format(user2+' ratings:',oglength2,'\n'))
 		outputfile.write('{} {:d}{}'.format('matched films:',len(finalfilms),'\n'))

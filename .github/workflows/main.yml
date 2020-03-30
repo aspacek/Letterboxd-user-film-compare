@@ -13,13 +13,16 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-# PYTHON VERSION 3.5
-
-  # This workflow contains a job called "CIsetup" for Python version 3.5
-  CIsetup3.5:
+  # This workflow contains a job called "CIsetup"
+  CIsetup:
 
     # The type of runner that the job will run on
     runs-on: macos-latest
+
+    # Loop through all python 3.x versions:
+    strategy:
+      matrix:
+        python-version: [3.5,3.6,3.7,3.8]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -30,23 +33,38 @@ jobs:
     # Checks-out the ability to run a python program here
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.5'
+        python-version: ${{ matrix.python-version }}
 
-    # Run the CI setup program:
-    - run: python user_film_compare_CI_setup.py
+    # Run the CI setup programs:
+    - run: python CI/user_film_compare_CI_setup_user_user_1.py
+    - run: python CI/user_film_compare_CI_setup_user_user_2.py
+    - run: python CI/user_film_compare_CI_setup_user_user_3.py
 
-    # Save the output file:
+    # Save the output files:
     - uses: actions/upload-artifact@v1
       with:
-        name: CI_test
-        path: user_film_compare_CI.py
+        name: CI_test_user_user_1_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_user_1.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_user_2_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_user_2.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_user_3_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_user_3.py
 
-  # Antother job called "CIrun" for Python version 3.5
-  CIrun3.5:
+  # Antother job called "CIrun"
+  CIrun:
 
     # Needs output from earlier job:
     needs: CIsetup
     runs-on: macos-latest
+
+    # Loop through all python 3.x versions:
+    strategy:
+      matrix:
+        python-version: [3.5,3.6,3.7,3.8]
 
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -55,15 +73,23 @@ jobs:
     # Checks-out the ability to run a python program here
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.5'
+        python-version: ${{ matrix.python-version }}
     - run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    # Grab the needed output:
+    # Grab the needed outputs:
     - uses: actions/download-artifact@v1
       with:
-        name: CI_test
+        name: CI_test_user_user_1_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_user_2_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_user_3_${{ matrix.python-version }}
 
-    # Run the new main file:
-    - run: python CI_test/user_film_compare_CI.py
+    # Run the new main files:
+    - run: python CI_test_user_user_1_${{ matrix.python-version }}/user_film_compare_CI_user_user_1.py
+    - run: python CI_test_user_user_2_${{ matrix.python-version }}/user_film_compare_CI_user_user_2.py
+    - run: python CI_test_user_user_3_${{ matrix.python-version }}/user_film_compare_CI_user_user_3.py

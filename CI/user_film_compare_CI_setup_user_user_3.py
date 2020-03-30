@@ -2,7 +2,7 @@
 
 # moogic and blankments
 
-# system = 1
+# system = 3
 
 # The point of this file is to remove any user input requests with given values.
 
@@ -10,14 +10,14 @@
 infile = open("user_film_compare.py","r")
 indata = infile.read()
 # Get output file ready:
-outfile = open("CI/user_film_compare_CI_user_user_1.py","w")
+outfile = open("CI/user_film_compare_CI_user_user_3.py","w")
 
 # Add user names:
 indata = indata.replace('user1 = input(f"\\nLetterboxd Username 1:\\n")','user1 = "moogic"')
 indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'following\' or \'followers\':\\n")','user2 = "blankments"')
 
 # Add system choice:
-indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "1"')
+indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "3"')
 
 # Use available ratings if they exist:
 indata = indata.replace('useratings = input(f"\\nUse saved rating if available, or get all new ratings? (use/new)\\n")','useratings = "use"')
@@ -31,7 +31,7 @@ indata = indata.replace('outtxtchoice = input(f"\\nOverwrite the previous text o
 indata = indata.replace('outcsvchoice = input(f"\\nOverwrite the previous CSV output? (y/n):\\n")','outcsvchoice = "n"')
 
 # Write out results to a file to be checked:
-indata = indata.replace("print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))","outputfile = open('CI/user_film_compare_CI_user_user_1.txt','w')\n\t\toutputfile.write('{} {:d}{}'.format(user1+' ratings:',oglength1,'\\n'))",1)
+indata = indata.replace("print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))","outputfile = open('CI/user_film_compare_CI_user_user_3.txt','w')\n\t\toutputfile.write('{} {:d}{}'.format(user1+' ratings:',oglength1,'\\n'))",1)
 indata = indata.replace("print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))","outputfile.write('{} {:d}{}'.format(user2+' ratings:',oglength2,'\\n'))")
 indata = indata.replace("print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\\n',longest=longest))","outputfile.write('{} {:d}{}'.format('matched films:',len(finalfilms),'\\n'))")
 indata = indata.replace("print('RESULTS = {:.3f}{}'.format(results,'\\n'))","outputfile.write('RESULTS = {:.3f}{}'.format(results,'\\n'))")

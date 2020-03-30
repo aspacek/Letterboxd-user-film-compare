@@ -144,7 +144,9 @@ messages = valcheck(messages,'user_user_3','min','match',matchedmin,int(matched)
 messages = valcheck(messages,'user_user_3','val','result',resultsval,float(results))
 messages = valcheck(messages,'user_user_3','minmax','time',[timemin,timemax],float(totaltime))
 
-# Print message output to a file:
+# Print message to screen and to an output to a file:
+for i in range(len(messages)):
+	print(messages[i])
 outfile = open('CI/user_film_compare_results.txt','w')
 for i in range(len(messages)):
 	outfile.write(messages[i]+'\n')

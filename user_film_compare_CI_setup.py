@@ -16,9 +16,10 @@ indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "3"')
 # Add number to compute:
 indata = indata.replace('tocompute = input(f"\\nChoose a number to compute:\\n")','tocompute = "10"')
 
-# Don't overwrite spread or output data:
+# Don't overwrite spread or output text and CSV data:
 indata = indata.replace('spreadchoice = input(f"\\nCompute new spread and overwrite the previous? (y/n):\\n")','spreadchoice = "n"')
-indata = indata.replace('outchoice = input(f"\\nOverwrite the previous output? (y/n):\\n")','outchoice = "n"')
+indata = indata.replace('outtxtchoice = input(f"\\nOverwrite the previous text output? (y/n):\\n")','outtxtchoice = "n"')
+indata = indata.replace('outcsvchoice = input(f"\\nOverwrite the previous CSV output? (y/n):\\n")','outcsvchoice = "n"')
 
 outfile.write(indata)
 

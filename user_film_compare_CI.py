@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
-import statistics
+import csv
 
 ##
 ## Written by Alex Spacek
@@ -586,19 +586,33 @@ else:
 		plt.savefig('Spreads/'+user1+'_'+user2+'_spread_plot.png')
 		spreadfile.close()
 
-	# Create output file, if necessary/wanted:
-	newout = 1
-	outpath = Path('Output/'+user1+'_'+user2+'_output.txt')
-	if outpath.exists():
-		print('Previous output found')
-		# Ask if new file should be written:
-		outchoice = "n"
+	# Create output files, if necessary/wanted:
+	newouttxt = 1
+	newoutcsv = 1
+	outpathtxt = Path('Output/'+user1+'_'+user2+'_output.txt')
+	outpathcsv = Path('Output/'+user1+'_'+user2+'_output.csv')
+	if outpathtxt.exists():
+		print('Previous text output found')
+		# Ask if new text file should be written:
+		outtxtchoice = "n"
 		print('')
-		if spreadchoice != "y":
-			newout = 0
-	if newout == 1:
+		if outtxtchoice != "y":
+			newouttxt = 0
+	if outpathcsv.exists():
+		print('Previous CSV output found')
+		# Ask if new CSV file should be written:
+		outcsvchoice = "n"
+		print('')
+		if outcsvchoice != "y":
+			newoutcsv = 0
+	if newouttxt == 1:
 		outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')
 		for i in range(len(sortedusers)):
 			outfile.write('{:{longest}} {}{}'.format(sortedusers[i],scores[i],'\n',longest=longest))
 		# Close output file:
 		outfile.close()
+	if newoutcsv == 1:
+		with open('Output/'+user1+'_'+user2+'_output.csv', mode='w') as outfile:
+			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			for i in range(len(sortedusers)):
+				csvwriter.writerow([sortedusers[i],scores[i]])

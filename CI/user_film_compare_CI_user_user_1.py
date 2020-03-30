@@ -186,15 +186,15 @@ def userfilms(user,useratings):
 	if useratings == "use":
 		priorratingspath = Path('UserFilms/'+user+'_ratings.csv')
 		if priorratingspath.exists():
-			print('Using existing ratings file for '+user+'\n')
+			print('Using existing ratings file for '+user+'!\n')
 			ratingsflag = 0
 			# If they exist, read them in:
 			films = []
 			ratings = []
-			with open('UserFilms/'+user1+'_ratings.csv') as csv_file:
-			    csv_reader = csv.reader(csv_file, delimiter=',')
-			    for row in csv_reader:
-			        films = films+[row[0]]
+			with open('UserFilms/'+user+'_ratings.csv') as csv_file:
+				csv_reader = csv.reader(csv_file, delimiter=',')
+				for row in csv_reader:
+					films = films+[row[0]]
 					ratings = ratings+[row[1]]
 
 	# If ratings file doesn't exist or new ratings wanted:
@@ -427,12 +427,13 @@ def scoring(finalfilms,finalratings1,finalratings2,system):
 
 # Beginning text and timing:
 print('\n**Note**')
-print('Each user takes about 30 seconds to process.')
+print('For a fresh run, each user takes about 30 seconds to process.')
 print('So, comparing two users takes about 1 minute.')
 print('When comparing to following or followers, here are some estimations:')
 print('      10 users = 5 minutes')
 print('     100 users = 1 hour')
 print('    1000 users = 8 hours')
+print('These times will be greatly shortened if user film files already exist.')
 print('\nSystems:')
 print('1 = even difference points between 1 and 10')
 print('2 = manual distribution in point differences by reddit user /u/d_anda')
@@ -443,7 +444,7 @@ times = []
 # The two users being compared, or if all friends are being compared:
 user1 = "moogic"
 user2 = "blankments"
-system = "3"
+system = "1"
 useratings = "use"
 
 # If just two users are being compared:
@@ -460,7 +461,7 @@ if user2 != 'following' and user2 != 'followers':
 	
 	# Working on user2:
 	print('Grabbing all film ratings from '+user2+'\n')
-	films2,ratings2 = userfilms(user2)
+	films2,ratings2 = userfilms(user2,useratings)
 	if films2 == -1 or ratings2 == -1:
 		print(user2+' has no ratings!\n')
 		flag = 1
@@ -482,15 +483,15 @@ if user2 != 'following' and user2 != 'followers':
 		# Get the similarity score and print results:
 		if len(finalfilms) > 0:
 			results = scoring(finalfilms,finalratings1,finalratings2,system)
-#			print('RESULTS = {:.3f}{}'.format(results,'\n'))
-#		else:
-#			print('No film matches found.\n')
-#	else:
-#		print('No films to match.\n')
-#
-#	# Print final timing:
-#	totaltime = datetime.now().timestamp()-starttime
-#	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
+			print('RESULTS = {:.3f}{}'.format(results,'\n'))
+		else:
+			print('No film matches found.\n')
+	else:
+		print('No films to match.\n')
+
+	# Print final timing:
+	totaltime = datetime.now().timestamp()-starttime
+	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
 
 # Else go through following or followers
 else:
@@ -513,7 +514,7 @@ else:
 	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
 	print('\nGrabbing all film ratings from '+user1+'\n')
-	films1,ratings1 = userfilms(user1)
+	films1,ratings1 = userfilms(user1,useratings)
 	if films1 == -1 or ratings1 == -1:
 		sys.exit("ERROR - in 'else' of main program: User 1 does not have any ratings.")
 	oglength1 = len(films1)
@@ -523,7 +524,7 @@ else:
 	for i in range(len(users)):
 		print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
 		flag = 0
-		films2,ratings2 = userfilms(users[i])
+		films2,ratings2 = userfilms(users[i],useratings)
 		if films2 == -1 or ratings2 == -1:
 			print(users[i]+' has no ratings.\n')
 			flag = 1

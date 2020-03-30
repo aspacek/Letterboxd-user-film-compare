@@ -1,17 +1,23 @@
+# TESTING User to User Comparison
+
+# moogic and blankments
+
+# system = 1
+
 # The point of this file is to remove any user input requests with given values.
 
 # Read in main file:
 infile = open("user_film_compare.py","r")
 indata = infile.read()
 # Get output file ready:
-outfile = open("user_film_compare_CI.py","w")
+outfile = open("CI/user_film_compare_CI_user_user_1.py","w")
 
 # Add user names:
 indata = indata.replace('user1 = input(f"\\nLetterboxd Username 1:\\n")','user1 = "moogic"')
 indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'following\' or \'followers\':\\n")','user2 = "blankments"')
 
 # Add system choice:
-indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "3"')
+indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "1"')
 
 # Use available ratings if they exist:
 indata = indata.replace('useratings = input(f"\\nUse saved rating if available, or get all new ratings? (use/new)\\n")','useratings = "use"')

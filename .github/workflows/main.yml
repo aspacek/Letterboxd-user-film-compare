@@ -13,8 +13,10 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This workflow contains a job called "CIsetup"
-  CIsetup:
+# PYTHON VERSION 3.5
+
+  # This workflow contains a job called "CIsetup" for Python version 3.5
+  CIsetup3.5:
 
     # The type of runner that the job will run on
     runs-on: macos-latest
@@ -28,7 +30,7 @@ jobs:
     # Checks-out the ability to run a python program here
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.5'
 
     # Run the CI setup program:
     - run: python user_film_compare_CI_setup.py
@@ -39,8 +41,8 @@ jobs:
         name: CI_test
         path: user_film_compare_CI.py
 
-  # Antother job called "CIrun"
-  CIrun:
+  # Antother job called "CIrun" for Python version 3.5
+  CIrun3.5:
 
     # Needs output from earlier job:
     needs: CIsetup
@@ -53,7 +55,7 @@ jobs:
     # Checks-out the ability to run a python program here
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.5'
     - run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt

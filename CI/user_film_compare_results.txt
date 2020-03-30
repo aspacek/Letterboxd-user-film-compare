@@ -1,0 +1,15 @@
+PASS  - user_user_1 - rating1
+PASS  - user_user_1 - rating2
+PASS  - user_user_1 - match
+PASS  - user_user_1 - result
+PASS  - user_user_1 - time
+PASS  - user_user_2 - rating1
+PASS  - user_user_2 - rating2
+PASS  - user_user_2 - match
+PASS  - user_user_2 - result
+PASS  - user_user_2 - time
+PASS  - user_user_3 - rating1
+PASS  - user_user_3 - rating2
+PASS  - user_user_3 - match
+PASS  - user_user_3 - result
+PASS  - user_user_3 - time

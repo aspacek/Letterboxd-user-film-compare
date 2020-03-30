@@ -4,7 +4,7 @@ import sys
 # This file checks all of the results from the CI file outputs
 
 # Function to do all the value checking:
-def valcheck(which,type,name,constraint,input):	
+def valcheck(messages,which,type,name,constraint,input):	
 	# which = 'user_user_1'
 	# type = 'min', 'val', 'minmax'
 	# name = 'rating', 'rating1', 'rating2', 'match', 'result', 'time'
@@ -27,25 +27,38 @@ def valcheck(which,type,name,constraint,input):
 		tolerance = -1
 
 	# Go through the different types:
+	allpass = 1
 	if type == 'min':
 		if input < constraint:
-			sys.exit('ERROR - '+which+' - '+name+' too low')
+			allpass = 0
+			messages = messages+['ERROR - '+which+' - '+name+' too low']
 		elif input > constraint+constraint*tolerance:
-			sys.exit('ERROR - '+which+' - '+name+' too high')
+			allpass = 0
+			messages = messages+['ERROR - '+which+' - '+name+' too high']
 	elif type == 'val':
 		if input < constraint-constraint*tolerance:
-			sys.exit('ERROR - '+which+' - '+name+' too low')
+			allpass = 0
+			messages = messages+['ERROR - '+which+' - '+name+' too low']
 		elif input > constraint+constraint*tolerance:
-			sys.exit('ERROR - '+which+' - '+name+' too high')
+			allpass = 0
+			messages = messages+['ERROR - '+which+' - '+name+' too high']
 	elif type == 'minmax':
 		if input < constraint[0]:
-			sys.exit('ERROR - '+which+' - '+name+' is less than '+str(constraint[0])+' seconds')
+			allpass = 0
+			messages = messages+['ERROR - '+which+' - '+name+' is less than '+str(constraint[0])+' seconds']
 		elif input > constraint[1]:
-			sys.exit('ERROR - '+which+' - '+name+' is greater than '+str(constraint[1])+' seconds')
+			allpass = 0
+			messages = messages+['ERROR - '+which+' - '+name+' is greater than '+str(constraint[1])+' seconds']
+	if allpass == 1:
+		messages = messages+['PASS  - '+which+' - '+name]
+	return messages
 
 ##################
 # BEGIN THE CHECKS
 ##################
+
+# Save pass/fail messages for output:
+messages = []
 
 # user_user_1 check
 user1min = 833
@@ -69,11 +82,11 @@ with open('CI/user_film_compare_CI_user_user_1.txt') as csv_file:
 		elif count == 4:
 			totaltime = row[4]
 		count = count+1
-valcheck('user_user_1','min','rating1',user1min,int(user1ratings))
-valcheck('user_user_1','min','rating2',user2min,int(user2ratings))
-valcheck('user_user_1','min','match',matchedmin,int(matched))
-valcheck('user_user_1','val','result',resultsval,float(results))
-valcheck('user_user_1','minmax','time',[timemin,timemax],float(totaltime))
+messages = valcheck(messages,'user_user_1','min','rating1',user1min,int(user1ratings))
+messages = valcheck(messages,'user_user_1','min','rating2',user2min,int(user2ratings))
+messages = valcheck(messages,'user_user_1','min','match',matchedmin,int(matched))
+messages = valcheck(messages,'user_user_1','val','result',resultsval,float(results))
+messages = valcheck(messages,'user_user_1','minmax','time',[timemin,timemax],float(totaltime))
 
 # user_user_2 check
 user1min = 833
@@ -97,11 +110,11 @@ with open('CI/user_film_compare_CI_user_user_2.txt') as csv_file:
 		elif count == 4:
 			totaltime = row[4]
 		count = count+1
-valcheck('user_user_2','min','rating1',user1min,int(user1ratings))
-valcheck('user_user_2','min','rating2',user2min,int(user2ratings))
-valcheck('user_user_2','min','match',matchedmin,int(matched))
-valcheck('user_user_2','val','result',resultsval,float(results))
-valcheck('user_user_2','minmax','time',[timemin,timemax],float(totaltime))
+messages = valcheck(messages,'user_user_2','min','rating1',user1min,int(user1ratings))
+messages = valcheck(messages,'user_user_2','min','rating2',user2min,int(user2ratings))
+messages = valcheck(messages,'user_user_2','min','match',matchedmin,int(matched))
+messages = valcheck(messages,'user_user_2','val','result',resultsval,float(results))
+messages = valcheck(messages,'user_user_2','minmax','time',[timemin,timemax],float(totaltime))
 
 # user_user_3 check
 user1min = 833
@@ -125,8 +138,15 @@ with open('CI/user_film_compare_CI_user_user_3.txt') as csv_file:
 		elif count == 4:
 			totaltime = row[4]
 		count = count+1
-valcheck('user_user_3','min','rating1',user1min,int(user1ratings))
-valcheck('user_user_3','min','rating2',user2min,int(user2ratings))
-valcheck('user_user_3','min','match',matchedmin,int(matched))
-valcheck('user_user_3','val','result',resultsval,float(results))
-valcheck('user_user_3','minmax','time',[timemin,timemax],float(totaltime))
+messages = valcheck(messages,'user_user_3','min','rating1',user1min,int(user1ratings))
+messages = valcheck(messages,'user_user_3','min','rating2',user2min,int(user2ratings))
+messages = valcheck(messages,'user_user_3','min','match',matchedmin,int(matched))
+messages = valcheck(messages,'user_user_3','val','result',resultsval,float(results))
+messages = valcheck(messages,'user_user_3','minmax','time',[timemin,timemax],float(totaltime))
+
+# Print message output to a file:
+outfile = open('CI/user_film_compare_results.txt','w')
+for i in range(len(messages)):
+	outfile.write(messages[i]+'\n')
+# Close output file:
+outfile.close()

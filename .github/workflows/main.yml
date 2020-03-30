@@ -145,3 +145,10 @@ jobs:
 
     # Run the check program:
     - run: python CI/user_film_compare_results_check.py
+
+    # Save the pass/fail output:
+    # Save the output files:
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_results_${{ matrix.python-version }}
+        path: CI/user_film_compare_results.txt

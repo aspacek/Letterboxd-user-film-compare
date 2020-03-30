@@ -179,92 +179,117 @@ def similarity(rating1,rating2,system):
 
 ##############################################
 # Function to grab a user's films and ratings:
-def userfilms(user):
+def userfilms(user,useratings):
 
-	# The base url of the user's film ratings:
-	url = 'https://letterboxd.com/'+user+'/films/ratings/'
-	# Grab source code for first ratings page:
-	r = requests.get(url)
-	source = r.text
-	
-	# Check if there are any ratings:
-	if source.find('No ratings yet') != -1:
-		films = -1
-		ratings = -1
-	else:
+	# First, if using available ratings, check if they exist:
+	ratingsflag = 1
+	if useratings == "use":
+		priorratingspath = Path('UserFilms/'+user+'_ratings.csv')
+		if priorratingspath.exists():
+			print('Using existing ratings file for '+user+'\n')
+			ratingsflag = 0
+			# If they exist, read them in:
+			films = []
+			ratings = []
+			with open('UserFilms/'+user1+'_ratings.csv') as csv_file:
+			    csv_reader = csv.reader(csv_file, delimiter=',')
+			    for row in csv_reader:
+			        films = films+[row[0]]
+					ratings = ratings+[row[1]]
 
-		# Find the number of ratings pages:
-		# First check if there's only one page:
-		pageflag = 0
-		if source.find('/'+user+'/films/ratings/page/') == -1:
-			pageflag = 1
+	# If ratings file doesn't exist or new ratings wanted:
+	if ratingsflag == 1:
+
+		# The base url of the user's film ratings:
+		url = 'https://letterboxd.com/'+user+'/films/ratings/'
+		# Grab source code for first ratings page:
+		r = requests.get(url)
+		source = r.text
+		
+		# Check if there are any ratings:
+		if source.find('No ratings yet') != -1:
+			films = -1
+			ratings = -1
 		else:
-			# First find the start of the number of pages:
-			length = len('/'+user+'/films/ratings/page/')
-			prepages = list(findstrings('/'+user+'/films/ratings/page/',source))
-			prepages = prepages[-1]+length
-			# Then find the end:
-			postpages = source.find('/"',prepages+1)
-			# The number is found between:
-			pages = int(source[prepages:postpages])
-		
-		# Loop through all pages and grab all the film titles:
-		# Initialize results:
-		films = []
-		ratings = []
-		
-		# Start on page 1:
-		# Find the location of the start of each film title:
-		length = len('data-film-slug="/film/')
-		prefilms = list(findstrings('data-film-slug="/film/',source))
-		prefilms = [value+length for value in prefilms]
-		# Find the location of the end of each film title, and get the titles:
-		for value in prefilms:
-			end = source.find('/"',value)
-			film = source[value:end]
-			films = films+[film]
-		# Do the same for ratings:
-		# Find the location of the start of each rating:
-		length = len('rating rated-')
-		preratings = list(findstrings('rating rated-',source))
-		preratings = [value+length for value in preratings]
-		# Find the location of the end of each rating, and get the ratings:
-		for value in preratings:
-			end = source.find('">',value)
-			rating = source[value:end]
-			ratings = ratings+[rating]
-		
-		# Now loop through the rest of the pages:
-		if pageflag == 0:
-			for page in range(pages-1):
-				# Start on page 2:
-				page = str(page + 2)
-				# Grab source code of the page:
-				r = requests.get(url+'page/'+page+'/')
-				source = r.text
-				# Find the location of the start of each film title:
-				length = len('data-film-slug="/film/')
-				prefilms = list(findstrings('data-film-slug="/film/',source))
-				prefilms = [value+length for value in prefilms]
-				# Find the location of the end of each film title, and get the titles:
-				for value in prefilms:
-					end = source.find('/"',value)
-					film = source[value:end]
-					films = films+[film]
-				# Do the same for ratings:
-				# Find the location of the start of each rating:
-				length = len('rating rated-')
-				preratings = list(findstrings('rating rated-',source))
-				preratings = [value+length for value in preratings]
-				# Find the location of the end of each rating, and get the ratings:
-				for value in preratings:
-					end = source.find('">',value)
-					rating = source[value:end]
-					ratings = ratings+[rating]
-		
-		# Make sure the lengths match:
-		if len(films) != len(ratings):
-			sys.exit("ERROR - in function 'userfilms': Number of films does not match number of ratings")
+	
+			# Find the number of ratings pages:
+			# First check if there's only one page:
+			pageflag = 0
+			if source.find('/'+user+'/films/ratings/page/') == -1:
+				pageflag = 1
+			else:
+				# First find the start of the number of pages:
+				length = len('/'+user+'/films/ratings/page/')
+				prepages = list(findstrings('/'+user+'/films/ratings/page/',source))
+				prepages = prepages[-1]+length
+				# Then find the end:
+				postpages = source.find('/"',prepages+1)
+				# The number is found between:
+				pages = int(source[prepages:postpages])
+			
+			# Loop through all pages and grab all the film titles:
+			# Initialize results:
+			films = []
+			ratings = []
+			
+			# Start on page 1:
+			# Find the location of the start of each film title:
+			length = len('data-film-slug="/film/')
+			prefilms = list(findstrings('data-film-slug="/film/',source))
+			prefilms = [value+length for value in prefilms]
+			# Find the location of the end of each film title, and get the titles:
+			for value in prefilms:
+				end = source.find('/"',value)
+				film = source[value:end]
+				films = films+[film]
+			# Do the same for ratings:
+			# Find the location of the start of each rating:
+			length = len('rating rated-')
+			preratings = list(findstrings('rating rated-',source))
+			preratings = [value+length for value in preratings]
+			# Find the location of the end of each rating, and get the ratings:
+			for value in preratings:
+				end = source.find('">',value)
+				rating = source[value:end]
+				ratings = ratings+[rating]
+			
+			# Now loop through the rest of the pages:
+			if pageflag == 0:
+				for page in range(pages-1):
+					# Start on page 2:
+					page = str(page + 2)
+					# Grab source code of the page:
+					r = requests.get(url+'page/'+page+'/')
+					source = r.text
+					# Find the location of the start of each film title:
+					length = len('data-film-slug="/film/')
+					prefilms = list(findstrings('data-film-slug="/film/',source))
+					prefilms = [value+length for value in prefilms]
+					# Find the location of the end of each film title, and get the titles:
+					for value in prefilms:
+						end = source.find('/"',value)
+						film = source[value:end]
+						films = films+[film]
+					# Do the same for ratings:
+					# Find the location of the start of each rating:
+					length = len('rating rated-')
+					preratings = list(findstrings('rating rated-',source))
+					preratings = [value+length for value in preratings]
+					# Find the location of the end of each rating, and get the ratings:
+					for value in preratings:
+						end = source.find('">',value)
+						rating = source[value:end]
+						ratings = ratings+[rating]
+			
+			# Make sure the lengths match:
+			if len(films) != len(ratings):
+				sys.exit("ERROR - in function 'userfilms': Number of films does not match number of ratings")
+
+		# Write out ratings to file:
+		with open('UserFilms/'+user+'_ratings.csv', mode='w') as outfile:
+			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+			for i in range(len(films)):
+				csvwriter.writerow([films[i],ratings[i]])
 
 	# Return the results:
 	return films,ratings
@@ -419,6 +444,7 @@ times = []
 user1 = "moogic"
 user2 = "blankments"
 system = "3"
+useratings = "use"
 
 # If just two users are being compared:
 if user2 != 'following' and user2 != 'followers':
@@ -427,7 +453,7 @@ if user2 != 'following' and user2 != 'followers':
 	
 	# Working on user1:
 	print('Grabbing all film ratings from '+user1+'\n')
-	films1,ratings1 = userfilms(user1)
+	films1,ratings1 = userfilms(user1,useratings)
 	if films1 == -1 or ratings1 == -1:
 		print(user1+' has no ratings!\n')
 		flag = 1

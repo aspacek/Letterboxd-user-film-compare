@@ -13,6 +13,9 @@ indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'followin
 # Add system choice:
 indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "3"')
 
+# Use available ratings if they exist:
+indata = indata.replace('useratings = input(f"\\nUse saved rating if available, or get all new ratings? (use/new)\\n")','useratings = "use"')
+
 # Add number to compute:
 indata = indata.replace('tocompute = input(f"\\nChoose a number to compute:\\n")','tocompute = "10"')
 

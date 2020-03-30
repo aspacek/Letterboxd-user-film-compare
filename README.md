@@ -15,3 +15,7 @@ To run, you just need the file "user_film_compare.py":
 
 Written using python 3.7.
 
+Tested successfully on python 3.6, 3.7, 3.8
+
+Python 3.5 seems to fail because of a problem with importing matplotlib.
+

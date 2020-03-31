@@ -208,8 +208,8 @@ def userfilms(user,useratings):
 		
 		# Check if there are any ratings:
 		if source.find('No ratings yet') != -1:
-			films = -1
-			ratings = -1
+			films = [-1]
+			ratings = [-1]
 		else:
 	
 			# Find the number of ratings pages:
@@ -421,6 +421,65 @@ def scoring(finalfilms,finalratings1,finalratings2,system):
 		result = 0.0
 	return result
 
+######################################
+# Function to interpret ratings match:
+def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
+
+	# If there isn't a prior spread, use default:
+	# 0-2:  Worst match
+	# 2-3:  Terrible match
+	# 3-4:  Really bad match
+	# 4-5:  Bad match
+	# 5-6:  Poor match
+	# 6-7:  Typical match
+	# 7-8:  Good match
+	# 8-9:  Great match
+	# 9-10: Amazing match
+	if spreadyes == 0:
+		if rating > 9.0:
+			return 'Amazing match'
+		elif rating > 8.0:
+			return 'Great match'
+		elif rating > 7.0:
+			return 'Good match'
+		elif rating > 6.0:
+			return 'Typical match'
+		elif rating > 5.0:
+			return 'Poor match'
+		elif rating > 4.0:
+			return 'Bad match'
+		elif rating > 3.0:
+			return 'Really bad match'
+		elif rating > 2.0:
+			return 'Terrible match'
+		elif rating >= 0.0:
+			return 'Worst match'
+	# Otherwise extract from the data:
+	elif spreadyes == 1:
+		ratings = []
+		for i in range(len(spreadval)):
+			ratings = ratings+[spreadmidpt[i] for val in range(spreadval[i])]
+		spreadmean = np.mean(ratings)
+		spreadstddev = np.std(ratings)
+		if rating > spreadmean+2.0*spreadstddev:
+			return 'Amazing match'
+		elif rating > spreadmean+1.5*spreadstddev:
+			return 'Great match'
+		elif rating > spreadmean+1.0*spreadstddev:
+			return 'Good match'
+		elif rating > spreadmean+0.0*spreadstddev:
+			return 'Typical match'
+		elif rating > spreadmean-1.0*spreadstddev:
+			return 'Poor match'
+		elif rating > spreadmean-1.5*spreadstddev:
+			return 'Bad match'
+		elif rating > spreadmean-2.0*spreadstddev:
+			return 'Really bad match'
+		elif rating > spreadmean-2.5*spreadstddev:
+			return 'Terrible match'
+		elif rating >= 0.0:
+			return 'Worst match'
+
 ############################
 #### START MAIN PROGRAM ####
 ############################
@@ -447,11 +506,32 @@ user2 = "blankments"
 system = "3"
 useratings = "use"
 
+# Check for prior spread file:
+spreadyes = 0
+spreadpath1 = Path('Spreads/'+user1+'_following_spread.txt')
+spreadpath2 = Path('Spreads/'+user1+'_followers_spread.txt')
+spreadmidpt = []
+spreadval = []
+if spreadpath1.exists():
+	spreadyes = 1
+	with open('Spreads/'+user1+'_following_spread.txt') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=' ')
+		for row in csv_reader:
+			spreadmidpt = spreadmidpt+[float(row[0])]
+			spreadval = spreadval+[int(row[1])]
+elif spreadpath2.exists():
+	spreadyes = 1
+	with open('Spreads/'+user1+'_followers_spread.txt') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=' ')
+		for row in csv_reader:
+			spreadmidpt = spreadmidpt+[float(row[0])]
+			spreadval = spreadval+[int(row[1])]
+
 # If just two users are being compared:
 if user2 != 'following' and user2 != 'followers':
 	#print('\nThe users being compared are '+user1+' and '+user2+'\n')
 	flag = 0
-	
+
 	# Working on user1:
 	#print('Grabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(user1,useratings)
@@ -485,6 +565,7 @@ if user2 != 'following' and user2 != 'followers':
 		if len(finalfilms) > 0:
 			results = scoring(finalfilms,finalratings1,finalratings2,system)
 			outputfile.write('RESULTS = {:.3f}{}'.format(results,'\n'))
+			#print('MATCH RATING = '+ratinginterpretation(spreadyes,results,spreadmidpt,spreadval)+'\n')
 		else:
 			trash = -1
 	else:
@@ -521,6 +602,7 @@ else:
 	oglength1 = len(films1)
 	# Initialize results:
 	scores = []
+	interpretations = []
 	loopstarttime = datetime.now().timestamp()
 	for i in range(len(users)):
 		#print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
@@ -538,9 +620,12 @@ else:
 				finalfilms = []
 			if len(finalfilms) > 0:
 				results = scoring(finalfilms,finalratings1,finalratings2,system)
+				interpretation = ratinginterpretation(spreadyes,results,spreadmidpt,spreadval)
 				scores = scores+[results]
+				interpretations = interpretations+[interpretation]
 			else:
 				scores = scores+[-1]
+				interpretations = interpretations+['N/A']
 			# Find longest username for a neat output:
 			longest = len(max([user1+' ratings:',users[i]+' ratings:','matched films:'],key=len))
 			#print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
@@ -548,6 +633,7 @@ else:
 			#print('{:{longest}} {:d}'.format('matched films:',len(finalfilms),longest=longest))
 			if len(finalfilms) > 0:
 				trash = -1
+				#print('match rating = '+interpretation)
 			else:
 				trash = -1
 			elapsedtime = datetime.now().timestamp()-starttime
@@ -570,6 +656,8 @@ else:
 	# Sort all the scores:
 	sortedusers = [name for number,name in sorted(zip(scores,users))]
 	sortedusers.reverse()
+	sortedinterpretations = [name for number,name in sorted(zip(scores,interpretations))]
+	sortedinterpretations.reverse()
 	scores.sort()
 	scores.reverse()
 
@@ -636,11 +724,11 @@ else:
 	if newouttxt == 1:
 		outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')
 		for i in range(len(sortedusers)):
-			outfile.write('{:{longest}} {}{}'.format(sortedusers[i],scores[i],'\n',longest=longest))
+			outfile.write('{:{longest}} {:8.5f}  {}{}'.format(sortedusers[i],scores[i],sortedinterpretations[i],'\n',longest=longest))
 		# Close output file:
 		outfile.close()
 	if newoutcsv == 1:
 		with open('Output/'+user1+'_'+user2+'_output.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			for i in range(len(sortedusers)):
-				csvwriter.writerow([sortedusers[i],scores[i]])
+				csvwriter.writerow([sortedusers[i],scores[i],sortedinterpretations[i]])

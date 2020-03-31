@@ -631,7 +631,7 @@ else:
 			print('{:{longest}} {:d}'.format(users[i]+' ratings:',oglength2,longest=longest))
 			print('{:{longest}} {:d}'.format('matched films:',len(finalfilms),longest=longest))
 			if len(finalfilms) > 0:
-				print('compatibility: {:.3f}'.format(results))
+				print('compatibility: {:.5f}'.format(results))
 				print('match rating = '+interpretation)
 			else:
 				print('No film matches found.')
@@ -665,7 +665,7 @@ else:
 	# Find longest username for a neat output:
 	longest = len(max(sortedusers,key=len))
 	for i in range(len(sortedusers)):
-		print('{:{longest}} -- {} -- {}'.format(sortedusers[i],scores[i],interpretations[i],longest=longest))
+		print('{:{longest}} -- {:8.5f} -- {}'.format(sortedusers[i],scores[i],sortedinterpretations[i],longest=longest))
 
 	# Print final timing:
 	totaltime = datetime.now().timestamp()-starttime
@@ -723,11 +723,11 @@ else:
 	if newouttxt == 1:
 		outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')
 		for i in range(len(sortedusers)):
-			outfile.write('{:{longest}} {} {}{}'.format(sortedusers[i],scores[i],interpretations[i],'\n',longest=longest))
+			outfile.write('{:{longest}} {:8.5f}  {}{}'.format(sortedusers[i],scores[i],sortedinterpretations[i],'\n',longest=longest))
 		# Close output file:
 		outfile.close()
 	if newoutcsv == 1:
 		with open('Output/'+user1+'_'+user2+'_output.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			for i in range(len(sortedusers)):
-				csvwriter.writerow([sortedusers[i],scores[i],interpretations[i]])
+				csvwriter.writerow([sortedusers[i],scores[i],sortedinterpretations[i]])

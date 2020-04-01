@@ -2,4 +2,4 @@ moogic ratings: 833
 blankments ratings: 1325
 matched films: 184
 RESULTS = 7.978
-Total time (s) = 0.286
+Total time (s) = 0.262

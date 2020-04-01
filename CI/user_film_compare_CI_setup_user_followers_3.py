@@ -1,8 +1,8 @@
-# TESTING User to Following Comparison
+# TESTING User to Followers Comparison
 
-# moogic and following
+# moogic and followers
 
-# system = 1
+# system = 3
 
 # The point of this file is to remove any user input requests with given values.
 
@@ -10,14 +10,14 @@
 infile = open("user_film_compare.py","r")
 indata = infile.read()
 # Get output file ready:
-outfile = open("CI/user_film_compare_CI_user_following_1.py","w")
+outfile = open("CI/user_film_compare_CI_user_followers_3.py","w")
 
 # Add user names:
 indata = indata.replace('user1 = input(f"\\nLetterboxd Username 1:\\n")','user1 = "moogic"')
-indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'following\' or \'followers\':\\n")','user2 = "following"')
+indata = indata.replace('user2 = input(f"\\nLetterboxd Username 2, or \'following\' or \'followers\':\\n")','user2 = "followers"')
 
 # Add system choice:
-indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "1"')
+indata = indata.replace('system = input(f"\\nSystem:\\n")','system = "3"')
 
 # Use available ratings if they exist:
 indata = indata.replace('useratings = input(f"\\nUse saved rating if available, or get all new ratings? (use/new)\\n")','useratings = "use"')
@@ -33,8 +33,8 @@ indata = indata.replace('outcsvchoice = input(f"\\nOverwrite the previous CSV ou
 # Write out results to a file to be checked:
 indata = indata.replace("outpathtxt = Path('Output/'+user1+'_'+user2+'_output.txt')","outpathtxt = Path('trash')")
 indata = indata.replace("outpathcsv = Path('Output/'+user1+'_'+user2+'_output.csv')","outpathcsv = Path('trash')")
-indata = indata.replace("outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')","outfile = open('CI/user_film_compare_CI_user_following_1.txt','w')")
-indata = indata.replace("with open('Output/'+user1+'_'+user2+'_output.csv', mode='w') as outfile:","with open('CI/user_film_compare_CI_user_following_1.csv', mode='w') as outfile:")
+indata = indata.replace("outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')","outfile = open('CI/user_film_compare_CI_user_followers_3.txt','w')")
+indata = indata.replace("with open('Output/'+user1+'_'+user2+'_output.csv', mode='w') as outfile:","with open('CI/user_film_compare_CI_user_followers_3.csv', mode='w') as outfile:")
 
 # Ignore user vs user output writing:
 indata = indata.replace("print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))","trash = -1",1)

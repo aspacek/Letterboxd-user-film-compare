@@ -503,7 +503,7 @@ times = []
 # The two users being compared, or if all friends are being compared:
 user1 = "moogic"
 user2 = "following"
-system = "1"
+system = "3"
 useratings = "use"
 
 # Check for prior spread file:
@@ -721,13 +721,13 @@ else:
 		if outcsvchoice != "y":
 			newoutcsv = 0
 	if newouttxt == 1:
-		outfile = open('CI/user_film_compare_CI_user_following_1.txt','w')
+		outfile = open('CI/user_film_compare_CI_user_following_3.txt','w')
 		for i in range(len(sortedusers)):
 			outfile.write('{:{longest}} {:8.5f}  {}{}'.format(sortedusers[i],scores[i],sortedinterpretations[i],'\n',longest=longest))
 		# Close output file:
 		outfile.close()
 	if newoutcsv == 1:
-		with open('CI/user_film_compare_CI_user_following_1.csv', mode='w') as outfile:
+		with open('CI/user_film_compare_CI_user_following_3.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			for i in range(len(sortedusers)):
 				csvwriter.writerow([sortedusers[i],scores[i],sortedinterpretations[i]])

@@ -144,6 +144,108 @@ messages = valcheck(messages,'user_user_3','min','match',matchedmin,int(matched)
 messages = valcheck(messages,'user_user_3','val','result',resultsval,float(results))
 messages = valcheck(messages,'user_user_3','minmax','time',[timemin,timemax],float(totaltime))
 
+# user_following_1 check
+user1val = 8.725
+user2val = 8.187
+user3val = 8.171
+with open('CI/user_film_compare_CI_user_following_1.csv') as csv_file:
+	csv_reader = csv.reader(csv_file, delimiter=',')
+	username = []
+	rating = []
+	match = []
+	for row in csv_reader:
+		username = username+[row[0]]
+		rating = rating+[row[1]]
+		match = match+[row[2]]
+messages = valcheck(messages,'user_following_1','val','rating',user1val,float(rating[0]))
+messages = valcheck(messages,'user_following_1','val','rating',user2val,float(rating[1]))
+messages = valcheck(messages,'user_following_1','val','rating',user3val,float(rating[2]))
+
+# user_following_2 check
+user1val = 7.642
+user2val = 6.887
+user3val = 6.730
+with open('CI/user_film_compare_CI_user_following_2.csv') as csv_file:
+	csv_reader = csv.reader(csv_file, delimiter=',')
+	username = []
+	rating = []
+	match = []
+	for row in csv_reader:
+		username = username+[row[0]]
+		rating = rating+[row[1]]
+		match = match+[row[2]]
+messages = valcheck(messages,'user_following_2','val','rating',user1val,float(rating[0]))
+messages = valcheck(messages,'user_following_2','val','rating',user2val,float(rating[1]))
+messages = valcheck(messages,'user_following_2','val','rating',user3val,float(rating[2]))
+
+# user_following_3 check
+user1val = 7.362
+user2val = 6.114
+user3val = 5.712
+with open('CI/user_film_compare_CI_user_following_3.csv') as csv_file:
+	csv_reader = csv.reader(csv_file, delimiter=',')
+	username = []
+	rating = []
+	match = []
+	for row in csv_reader:
+		username = username+[row[0]]
+		rating = rating+[row[1]]
+		match = match+[row[2]]
+messages = valcheck(messages,'user_following_3','val','rating',user1val,float(rating[0]))
+messages = valcheck(messages,'user_following_3','val','rating',user2val,float(rating[1]))
+messages = valcheck(messages,'user_following_3','val','rating',user3val,float(rating[2]))
+
+# user_followers_1 check
+user1val = 8.725
+user2val = 8.405
+user3val = 7.971
+with open('CI/user_film_compare_CI_user_followers_1.csv') as csv_file:
+	csv_reader = csv.reader(csv_file, delimiter=',')
+	username = []
+	rating = []
+	match = []
+	for row in csv_reader:
+		username = username+[row[0]]
+		rating = rating+[row[1]]
+		match = match+[row[2]]
+messages = valcheck(messages,'user_followers_1','val','rating',user1val,float(rating[0]))
+messages = valcheck(messages,'user_followers_1','val','rating',user2val,float(rating[1]))
+messages = valcheck(messages,'user_followers_1','val','rating',user3val,float(rating[2]))
+
+# user_followers_2 check
+user1val = 7.642
+user2val = 7.119
+user3val = 6.527
+with open('CI/user_film_compare_CI_user_followers_2.csv') as csv_file:
+	csv_reader = csv.reader(csv_file, delimiter=',')
+	username = []
+	rating = []
+	match = []
+	for row in csv_reader:
+		username = username+[row[0]]
+		rating = rating+[row[1]]
+		match = match+[row[2]]
+messages = valcheck(messages,'user_followers_2','val','rating',user1val,float(rating[0]))
+messages = valcheck(messages,'user_followers_2','val','rating',user2val,float(rating[1]))
+messages = valcheck(messages,'user_followers_2','val','rating',user3val,float(rating[2]))
+
+# user_followers_3 check
+user1val = 7.362
+user2val = 6.262
+user3val = 5.217
+with open('CI/user_film_compare_CI_user_followers_3.csv') as csv_file:
+	csv_reader = csv.reader(csv_file, delimiter=',')
+	username = []
+	rating = []
+	match = []
+	for row in csv_reader:
+		username = username+[row[0]]
+		rating = rating+[row[1]]
+		match = match+[row[2]]
+messages = valcheck(messages,'user_followers_3','val','rating',user1val,float(rating[0]))
+messages = valcheck(messages,'user_followers_3','val','rating',user2val,float(rating[1]))
+messages = valcheck(messages,'user_followers_3','val','rating',user3val,float(rating[2]))
+
 # Print message to screen and to an output to a file:
 for i in range(len(messages)):
 	print(messages[i])

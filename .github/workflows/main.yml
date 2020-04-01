@@ -39,6 +39,12 @@ jobs:
     - run: python CI/user_film_compare_CI_setup_user_user_1.py
     - run: python CI/user_film_compare_CI_setup_user_user_2.py
     - run: python CI/user_film_compare_CI_setup_user_user_3.py
+    - run: python CI/user_film_compare_CI_setup_user_following_1.py
+    - run: python CI/user_film_compare_CI_setup_user_following_2.py
+    - run: python CI/user_film_compare_CI_setup_user_following_3.py
+    - run: python CI/user_film_compare_CI_setup_user_followers_1.py
+    - run: python CI/user_film_compare_CI_setup_user_followers_2.py
+    - run: python CI/user_film_compare_CI_setup_user_followers_3.py
 
     # Save the output files:
     - uses: actions/upload-artifact@v1
@@ -53,8 +59,32 @@ jobs:
       with:
         name: CI_test_user_user_3_${{ matrix.python-version }}
         path: CI/user_film_compare_CI_user_user_3.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_following_1_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_following_1.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_following_2_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_following_2.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_following_3_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_following_3.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_followers_1_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_followers_1.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_followers_2_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_followers_2.py
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_test_user_followers_3_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_followers_3.py
 
-  # Antother job called "CIrun"
+  # Another job called "CIrun"
   CIrun:
 
     # Needs output from earlier job:
@@ -88,11 +118,35 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: CI_test_user_user_3_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_following_1_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_following_2_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_following_3_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_followers_1_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_followers_2_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_test_user_followers_3_${{ matrix.python-version }}
 
     # Run the new main files:
     - run: python CI_test_user_user_1_${{ matrix.python-version }}/user_film_compare_CI_user_user_1.py
     - run: python CI_test_user_user_2_${{ matrix.python-version }}/user_film_compare_CI_user_user_2.py
     - run: python CI_test_user_user_3_${{ matrix.python-version }}/user_film_compare_CI_user_user_3.py
+    - run: python CI_test_user_following_1_${{ matrix.python-version }}/user_film_compare_CI_user_following_1.py
+    - run: python CI_test_user_following_2_${{ matrix.python-version }}/user_film_compare_CI_user_following_2.py
+    - run: python CI_test_user_following_3_${{ matrix.python-version }}/user_film_compare_CI_user_following_3.py
+    - run: python CI_test_user_followers_1_${{ matrix.python-version }}/user_film_compare_CI_user_followers_1.py
+    - run: python CI_test_user_followers_2_${{ matrix.python-version }}/user_film_compare_CI_user_followers_2.py
+    - run: python CI_test_user_followers_3_${{ matrix.python-version }}/user_film_compare_CI_user_followers_3.py
 
     # Save the output files:
     - uses: actions/upload-artifact@v1
@@ -107,6 +161,30 @@ jobs:
       with:
         name: CI_output_user_user_3_${{ matrix.python-version }}
         path: CI/user_film_compare_CI_user_user_3.txt
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_output_user_following_1_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_following_1.csv
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_output_user_following_2_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_following_2.csv
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_output_user_following_3_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_following_3.csv
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_output_user_followers_1_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_followers_1.csv
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_output_user_followers_2_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_followers_2.csv
+    - uses: actions/upload-artifact@v1
+      with:
+        name: CI_output_user_followers_3_${{ matrix.python-version }}
+        path: CI/user_film_compare_CI_user_followers_3.csv
 
   # Another job called "CIcheck"
   CIcheck:
@@ -142,6 +220,24 @@ jobs:
     - uses: actions/download-artifact@v1
       with:
         name: CI_output_user_user_3_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_output_user_following_1_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_output_user_following_2_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_output_user_following_3_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_output_user_followers_1_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_output_user_followers_2_${{ matrix.python-version }}
+    - uses: actions/download-artifact@v1
+      with:
+        name: CI_output_user_followers_3_${{ matrix.python-version }}
 
     # Run the check program:
     - run: python CI/user_film_compare_results_check.py

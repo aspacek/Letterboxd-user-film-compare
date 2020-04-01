@@ -586,7 +586,7 @@ else:
 	#print('There are '+str(len(users)))
 
 	# Check if all or some should be computed:
-	tocompute = "10"
+	tocompute = "3"
 	if int(tocompute) >= 0 and int(tocompute) <= len(users):
 		users = users[:int(tocompute)]
 	else:

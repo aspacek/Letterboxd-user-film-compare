@@ -619,7 +619,8 @@ def inputread(verbose,inputfile):
 	if not('user1' in locals()):
 		sys.exit('ERROR - in function "inputread" - user1 not defined in input file')
 	if not('user2' in locals()):
-		sys.exit('ERROR - in function "inputread" - user2 not defined in input file')
+		print('\nuser2 not defined in input file, set to both by default')
+		user2 = 'both'
 	if not('system' in locals()):
 		print('\nsystem not defined in input file, set to 3 by default')
 		system = 3

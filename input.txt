@@ -12,7 +12,7 @@ user1 = moogic
 # or go through all of username 1's followers,
 # or go through both following and followers with "both":
 #user2 = blankments
-user2 = both
+#user2 = both
 #user2 = following
 #user2 = followers
 

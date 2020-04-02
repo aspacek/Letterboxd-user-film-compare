@@ -143,7 +143,7 @@ def getstrings(which,prestring,poststring,source):
 	elif which == 'all':
 		prevalue = [item+length for item in prevalue]
 	else:
-		sys.exit('ERROR - in function "getstrings": Invalid input for "which"')
+		sys.exit('ERROR - in function "getstrings" - Invalid input for "which"')
 	# Find the location of the end of string, and get the strings:
 	strings = []
 	for beginning in prevalue:
@@ -169,7 +169,7 @@ def similarity(rating1,rating2,system):
 	# Get the absolute difference in ratings for systems 1 & 2:
 	diff = abs(rating1-rating2)
 	# SYSTEM 1 (see above for details)
-	if system == '1':
+	if system == 1:
 		diffs =  [0.0,  0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5]
 		points = [10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0]
 		if   diff == diffs[0]:
@@ -193,9 +193,9 @@ def similarity(rating1,rating2,system):
 		elif diff == diffs[9]:
 			result = points[9]
 		else:
-			sys.exit('ERROR - in function "similarity": Ratings difference in system 1 is not valid')
+			sys.exit('ERROR - in function "similarity" - Ratings difference in system 1 is not valid')
 	# SYSTEM 2 (see above for details)
-	elif system == '2':
+	elif system == 2:
 		diffs =  [0.0,  0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5]
 		points = [10.0, 8.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.5, 0.0]
 		if   diff == diffs[0]:
@@ -219,9 +219,9 @@ def similarity(rating1,rating2,system):
 		elif diff == diffs[9]:
 			result = points[9]
 		else:
-			sys.exit('ERROR - in function "similarity": Ratings difference in system 2 is not valid')
+			sys.exit('ERROR - in function "similarity" - Ratings difference in system 2 is not valid')
 	# SYSTEM 3 (see above for details)
-	elif system == '3':
+	elif system == 3:
 		# Same ratings get 10 points, and more meaningful matches get extra points:
 		#   (15 points for match 5, 12 points for matchin 4.5 or 0.5, and 10.5 points for matching 4 or 1)
 		if rating1 == rating2:
@@ -254,11 +254,11 @@ def similarity(rating1,rating2,system):
 			elif maxrating == 2.0 or maxrating == 1.5 or maxrating == 1.0:
 				gap = 0.5
 			else:
-				sys.exit('ERROR - in function "similarity": Ratings in system 3 are not valid')
+				sys.exit('ERROR - in function "similarity" - Ratings in system 3 are not valid')
 			# Then use the formula with the given points gap to find the points for this difference:
 			result = 10.0-gap*(maxrating-minrating)/0.5
 	else:
-		sys.exit('ERROR - in function "similarity": System option chosen isn\'t available')
+		sys.exit('ERROR - in function "similarity" - System option chosen isn\'t available')
 	# Return the similarity score:
 	return result
 
@@ -332,7 +332,7 @@ def userfilms(verbose,user,useratings):
 					ratings = ratings+getstrings('all','rating rated-','">',source)
 			# Make sure the lengths match:
 			if len(films) != len(ratings):
-				sys.exit('ERROR - in function "userfilms": Number of films does not match number of ratings')
+				sys.exit('ERROR - in function "userfilms" - Number of films does not match number of ratings')
 		# Write out ratings to file:
 		with open('UserFilms/'+user+'_ratings.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -509,7 +509,7 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 	# 9-10: Amazing match
 	if spreadyes == 0:
 		if rating > 10.0:
-			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is >10')
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is >10')
 		elif rating > 9.0:
 			return 'Amazing match'
 		elif rating > 8.0:
@@ -529,7 +529,7 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 		elif rating >= 0.0:
 			return 'Worst match'
 		else:
-			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is <0')
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is <0')
 	# Otherwise extract from the data:
 	elif spreadyes == 1:
 		ratings = []
@@ -540,7 +540,7 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 		spreadstddev = np.std(ratings)
 		# Interpret the similarity score based on mean and standard deviations:
 		if rating > 10.0:
-			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is >10')
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is >10')
 		if rating > spreadmean+2.0*spreadstddev:
 			return 'Amazing match'
 		elif rating > spreadmean+1.5*spreadstddev:
@@ -560,14 +560,72 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 		elif rating >= 0.0:
 			return 'Worst match'
 		else:
-			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is <0')
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is <0')
+
+###############################################
+# Function to read in and parse the input file:
+#
+#
+#################################
+def inputread(verbose,inputfile):
+	# Read in the whole input file:
+	with open(inputfile) as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=' ',skipinitialspace=True)
+		keyword = []
+		equals = []
+		parameter = []
+		for row in csv_reader:
+			if len(row) == 3:
+				keyword = keyword+[row[0]]
+				equals = equals+[row[1]]
+				parameter = parameter+[row[2]]
+	# Get parameters:
+	for i in range(len(keyword)):
+		# user1
+		if keyword[i] == 'user1' and equals[i] == '=':
+			user1 = parameter[i]
+		# user2
+		if keyword[i] == 'user2' and equals[i] == '=':
+			user2 = parameter[i]
+		# system
+		if keyword[i] == 'system' and equals[i] == '=':
+			system = int(parameter[i])
+		# useratings
+		if keyword[i] == 'useratings' and equals[i] == '=':
+			useratings = parameter[i]
+		# tocompute
+		if keyword[i] == 'tocompute' and equals[i] == '=':
+			tocompute = parameter[i]
+		# spreadchoice
+		if keyword[i] == 'spreadchoice' and equals[i] == '=':
+			spreadchoice = parameter[i]
+		# outtxtchoice
+		if keyword[i] == 'outtxtchoice' and equals[i] == '=':
+			outtxtchoice = parameter[i]
+		# outcsvchoice
+		if keyword[i] == 'outcsvchoice' and equals[i] == '=':
+			outcsvchoice = parameter[i]
+	return user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice
 
 ############################
 #### START MAIN PROGRAM ####
 ############################
 
+# Grabs values entered through execution, i.e. python user_film_compare.py input.txt 1
+# For an input file called 'input.txt' and verbose = 1 (print out info)
 inputs = sys.argv
-verbose = int(inputs[1])
+inputfile = inputs[1]
+verbose = int(inputs[2])
+
+# Make sure inputs are valid:
+inpath = Path(inputfile)
+if not(inpath.exists()):
+	sys.exit('ERROR - in main program - Input file does not exist')
+if verbose != 0 and verbose != 1:
+	sys.exit('ERROR - in main program - Verbose not 0 or 1')
+
+# Read in input file:
+user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice = inputread(verbose,inputfile)
 
 # Beginning text and timing:
 if verbose == 1:
@@ -587,10 +645,10 @@ starttime = datetime.now().timestamp()
 times = []
 
 # The two users being compared, or if all friends are being compared:
-user1 = input(f"\nLetterboxd Username 1:\n")
-user2 = input(f"\nLetterboxd Username 2, or 'following' or 'followers':\n")
-system = input(f"\nSystem:\n")
-useratings = input(f"\nUse saved rating if available, or get all new ratings? (use/new)\n")
+#user1 = input(f"\nLetterboxd Username 1:\n")
+#user2 = input(f"\nLetterboxd Username 2, or 'following' or 'followers':\n")
+#system = input(f"\nSystem:\n")
+#useratings = input(f"\nUse saved rating if available, or get all new ratings? (use/new)\n")
 
 # Check for prior spread file:
 spreadyes = 0
@@ -686,11 +744,17 @@ else:
 		print('There are '+str(len(users)))
 
 	# Check if all or some should be computed:
-	tocompute = input(f"\nChoose a number to compute:\n")
+	#tocompute = input(f"\nChoose a number to compute:\n")
+	if tocompute == 'all':
+		tocompute = len(users)
+	elif int(tocompute) > len(users):
+		tocompute = len(users)
+	else:
+		tocompute = int(tocompute)
 	if int(tocompute) >= 0 and int(tocompute) <= len(users):
 		users = users[:int(tocompute)]
 	else:
-		sys.exit("ERROR - in 'else' of main program: Invalid number entered.")
+		sys.exit("ERROR - in 'else' of main program - Invalid number entered.")
 
 	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
@@ -698,7 +762,7 @@ else:
 		print('\nGrabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(verbose,user1,useratings)
 	if films1[0] == '-1' and ratings1[0] == -1:
-		sys.exit("ERROR - in 'else' of main program: User 1 does not have any ratings.")
+		sys.exit("ERROR - in 'else' of main program - User 1 does not have any ratings.")
 	oglength1 = len(films1)
 	# Initialize results:
 	scores = []
@@ -790,7 +854,7 @@ else:
 		if verbose == 1:
 			print('Previous spread found')
 		# Ask if new file should be written:
-		spreadchoice = input(f"\nCompute new spread and overwrite the previous? (y/n):\n")
+		#spreadchoice = input(f"\nCompute new spread and overwrite the previous? (y/n):\n")
 		if verbose == 1:
 			print('')
 		if spreadchoice != "y":
@@ -824,7 +888,7 @@ else:
 		if verbose == 1:
 			print('Previous text output found')
 		# Ask if new text file should be written:
-		outtxtchoice = input(f"\nOverwrite the previous text output? (y/n):\n")
+		#outtxtchoice = input(f"\nOverwrite the previous text output? (y/n):\n")
 		if verbose == 1:
 			print('')
 		if outtxtchoice != "y":
@@ -833,7 +897,7 @@ else:
 		if verbose == 1:
 			print('Previous CSV output found')
 		# Ask if new CSV file should be written:
-		outcsvchoice = input(f"\nOverwrite the previous CSV output? (y/n):\n")
+		#outcsvchoice = input(f"\nOverwrite the previous CSV output? (y/n):\n")
 		if verbose == 1:
 			print('')
 		if outcsvchoice != "y":

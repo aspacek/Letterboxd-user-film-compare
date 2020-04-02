@@ -662,20 +662,28 @@ times = []
 
 # Check for prior spread file:
 spreadyes = 0
-spreadpath1 = Path('Spreads/'+user1+'_following_spread.txt')
-spreadpath2 = Path('Spreads/'+user1+'_followers_spread.txt')
+spreadpath1 = Path('Spreads/'+user1+'_both_'+str(system)+'_spread.txt')
+spreadpath2 = Path('Spreads/'+user1+'_following_'+str(system)+'_spread.txt')
+spreadpath3 = Path('Spreads/'+user1+'_followers_'+str(system)+'_spread.txt')
 spreadmidpt = []
 spreadval = []
 if spreadpath1.exists():
 	spreadyes = 1
-	with open('Spreads/'+user1+'_following_spread.txt') as csv_file:
+	with open('Spreads/'+user1+'_both_'+str(system)+'_spread.txt') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=' ')
 		for row in csv_reader:
 			spreadmidpt = spreadmidpt+[float(row[0])]
 			spreadval = spreadval+[int(row[1])]
 elif spreadpath2.exists():
 	spreadyes = 1
-	with open('Spreads/'+user1+'_followers_spread.txt') as csv_file:
+	with open('Spreads/'+user1+'_following_'+str(system)+'_spread.txt') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=' ')
+		for row in csv_reader:
+			spreadmidpt = spreadmidpt+[float(row[0])]
+			spreadval = spreadval+[int(row[1])]
+elif spreadpath3.exists():
+	spreadyes = 1
+	with open('Spreads/'+user1+'_followers_'+str(system)+'_spread.txt') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=' ')
 		for row in csv_reader:
 			spreadmidpt = spreadmidpt+[float(row[0])]
@@ -878,14 +886,17 @@ else:
 		# remove any "-1" values from the scores:
 		cutscores = []
 		cutusers = []
+		cutinterpretations = []
 		for i in range(len(scores)):
 			if scores[i] >= 0.0:
 				cutscores = cutscores+[scores[i]]
 				cutusers = cutusers+[sortedusers[i]]
+				cutinterpretations = cutinterpretations+[sortedinterpretations[i]]
 		spreadfile = open('Spreads/'+user1+'_'+user2+'_'+str(system)+'_spread.txt','w')
-		bins = [0,1,2,3,4,5,6,7,8,9,10]
+		bins = [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10]
+		width = bins[1]-bins[0]
 		hist,bin_edges = np.histogram(cutscores,bins=bins)
-		midpoints = [value-0.5 for value in range(len(bins))[1:]]
+		midpoints = [bins[i]-(width/2.0) for i in range(len(bins))[1:]]
 		for i in range(len(hist)):
 			spreadfile.write(str(midpoints[i])+' '+str(hist[i])+'\n')
 		plt.plot(midpoints,hist)

@@ -333,13 +333,13 @@ def userfilms(verbose,user,useratings):
 			# Make sure the lengths match:
 			if len(films) != len(ratings):
 				sys.exit('ERROR - in function "userfilms": Number of films does not match number of ratings')
-		# Ratings should be integer type:
-		ratings = [int(item) for item in ratings]
 		# Write out ratings to file:
 		with open('UserFilms/'+user+'_ratings.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			for i in range(len(films)):
 				csvwriter.writerow([films[i],ratings[i]])
+	# Ratings should be integer type:
+	ratings = [int(item) for item in ratings]
 	# Return the results:
 	return films,ratings
 
@@ -463,14 +463,24 @@ def filmmatch(films1,ratings1,films2,ratings2):
 
 ##############################################
 # Function to compute final similarity scores:
+# INPUTS:
+#   finalfilms    = string array (matched films)
+#   finalratings1 = float array (matched films user1 ratings)
+#   finalratings2 = float array (matched films user2 ratings)
+#   system        = integer (1, 2, 3)
+# OUTPUTS:
+#   result = float (average points between all matched films)
+###########################################################
 def scoring(finalfilms,finalratings1,finalratings2,system):
+	# Loop through every matched film rating and compute similarity score:
 	finalpoints = []
 	for i in range(len(finalfilms)):
-		rating1 = int(finalratings1[i])/2.0
-		rating2 = int(finalratings2[i])/2.0
+		rating1 = finalratings1[i]/2.0
+		rating2 = finalratings2[i]/2.0
 		points = similarity(rating1,rating2,system)
 		finalpoints = finalpoints+[points]
-	result = sum(finalpoints)/len(finalpoints)
+	# Take the average of all values:
+	result = np.mean(finalpoints)
 	# If the result is >10 or <0 for whatever reason, limit them to the extremes:
 	if result > 10.0:
 		result = 10.0
@@ -480,8 +490,13 @@ def scoring(finalfilms,finalratings1,finalratings2,system):
 
 ######################################
 # Function to interpret ratings match:
+# INPUTS:
+#   spreadyes   = integer (0 or 1)
+#   rating      = float (the similarity score to interpret)
+#   spreadmidpt = 
+# OUTPUTS:
+#################################################################
 def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
-
 	# If there isn't a prior spread, use default:
 	# 0-2:  Worst match
 	# 2-3:  Terrible match
@@ -493,7 +508,9 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 	# 8-9:  Great match
 	# 9-10: Amazing match
 	if spreadyes == 0:
-		if rating > 9.0:
+		if rating > 10.0:
+			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is >10')
+		elif rating > 9.0:
 			return 'Amazing match'
 		elif rating > 8.0:
 			return 'Great match'
@@ -511,13 +528,19 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 			return 'Terrible match'
 		elif rating >= 0.0:
 			return 'Worst match'
+		else:
+			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is <0')
 	# Otherwise extract from the data:
 	elif spreadyes == 1:
 		ratings = []
+		# Combine the saved spread and compute the mean and standard deviation:
 		for i in range(len(spreadval)):
 			ratings = ratings+[spreadmidpt[i] for val in range(spreadval[i])]
 		spreadmean = np.mean(ratings)
 		spreadstddev = np.std(ratings)
+		# Interpret the similarity score based on mean and standard deviations:
+		if rating > 10.0:
+			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is >10')
 		if rating > spreadmean+2.0*spreadstddev:
 			return 'Amazing match'
 		elif rating > spreadmean+1.5*spreadstddev:
@@ -536,26 +559,30 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 			return 'Terrible match'
 		elif rating >= 0.0:
 			return 'Worst match'
+		else:
+			sys.exit('ERROR - in function "ratinginterpretation": Similarity score is <0')
 
 ############################
 #### START MAIN PROGRAM ####
 ############################
 
-verbose = 1
+inputs = sys.argv
+verbose = int(inputs[1])
 
 # Beginning text and timing:
-print('\n**Note**')
-print('For a fresh run, each user takes about 30 seconds to process.')
-print('So, comparing two users takes about 1 minute.')
-print('When comparing to following or followers, here are some estimations:')
-print('      10 users = 5 minutes')
-print('     100 users = 1 hour')
-print('    1000 users = 8 hours')
-print('These times will be greatly shortened if user film files already exist.')
-print('\nSystems:')
-print('1 = even difference points between 1 and 10')
-print('2 = manual distribution in point differences by reddit user /u/d_anda')
-print('3 = complex point system by aes, giving different points depending on actual ratings (RECOMMENDED)')
+if verbose == 1:
+	print('\n**Note**')
+	print('For a fresh run, each user takes about 30 seconds to process.')
+	print('So, comparing two users takes about 1 minute.')
+	print('When comparing to following or followers, here are some estimations:')
+	print('      10 users = 5 minutes')
+	print('     100 users = 1 hour')
+	print('    1000 users = 8 hours')
+	print('These times will be greatly shortened if user film files already exist.')
+	print('\nSystems:')
+	print('1 = even difference points between 1 and 10')
+	print('2 = manual distribution in point differences by reddit user /u/d_anda')
+	print('3 = complex point system by aes, giving different points depending on actual ratings (RECOMMENDED)')
 starttime = datetime.now().timestamp()
 times = []
 
@@ -588,26 +615,32 @@ elif spreadpath2.exists():
 
 # If just two users are being compared:
 if user2 != 'following' and user2 != 'followers':
-	print('\nThe users being compared are '+user1+' and '+user2+'\n')
+	if verbose == 1:
+		print('\nThe users being compared are '+user1+' and '+user2+'\n')
 	flag = 0
 
 	# Working on user1:
-	print('Grabbing all film ratings from '+user1+'\n')
+	if verbose == 1:
+		print('Grabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(verbose,user1,useratings)
 	if films1[0] == '-1' and ratings1[0] == -1:
-		print(user1+' has no ratings!\n')
+		if verbose == 1:
+			print(user1+' has no ratings!\n')
 		flag = 1
 	
 	# Working on user2:
-	print('Grabbing all film ratings from '+user2+'\n')
+	if verbose == 1:
+		print('Grabbing all film ratings from '+user2+'\n')
 	films2,ratings2 = userfilms(verbose,user2,useratings)
 	if films2 == '-1' and ratings2 == -1:
-		print(user2+' has no ratings!\n')
+		if verbose == 1:
+			print(user2+' has no ratings!\n')
 		flag = 1
 	
 	# Find all matching films:
 	if flag == 0:
-		print('Finding matching films\n')
+		if verbose == 1:
+			print('Finding matching films\n')
 		oglength1 = len(films1)
 		oglength2 = len(films2)
 		finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
@@ -615,34 +648,42 @@ if user2 != 'following' and user2 != 'followers':
 			finalfilms = []
 		# Find longest username for a neat output:
 		longest = len(max([user1+' ratings:',user2+' ratings:','matched films:'],key=len))
-		print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
-		print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))
-		print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\n',longest=longest))
+		if verbose == 1:
+			print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
+			print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))
+			print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\n',longest=longest))
 
 		# Get the similarity score and print results:
 		if len(finalfilms) > 0:
 			results = scoring(finalfilms,finalratings1,finalratings2,system)
-			print('RESULTS = {:.3f}{}'.format(results,'\n'))
-			print('MATCH RATING = '+ratinginterpretation(spreadyes,results,spreadmidpt,spreadval)+'\n')
+			if verbose == 1:
+				print('RESULTS = {:.3f}{}'.format(results,'\n'))
+				print('MATCH RATING = '+ratinginterpretation(spreadyes,results,spreadmidpt,spreadval)+'\n')
 		else:
-			print('No film matches found.\n')
+			if verbose == 1:
+				print('No film matches found.\n')
 	else:
-		print('No films to match.\n')
+		if verbose == 1:
+			print('No films to match.\n')
 
 	# Print final timing:
 	totaltime = datetime.now().timestamp()-starttime
-	print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
+	if verbose == 1:
+		print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
 
 # Else go through following or followers
 else:
 
 	# Find all following or followers:
 	if user2 == 'following':
-		print('\nGrabbing all users that '+user1+' is following\n')
+		if verbose == 1:
+			print('\nGrabbing all users that '+user1+' is following\n')
 	else:
-		print('\nGrabbing all users that follow '+user1+'\n')
+		if verbose == 1:
+			print('\nGrabbing all users that follow '+user1+'\n')
 	users = userfollow(user1,user2)
-	print('There are '+str(len(users)))
+	if verbose == 1:
+		print('There are '+str(len(users)))
 
 	# Check if all or some should be computed:
 	tocompute = input(f"\nChoose a number to compute:\n")
@@ -653,7 +694,8 @@ else:
 
 	# Compute similarity score for all or some users:
 	# Just need to grab films for user1 once:
-	print('\nGrabbing all film ratings from '+user1+'\n')
+	if verbose == 1:
+		print('\nGrabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(verbose,user1,useratings)
 	if films1[0] == '-1' and ratings1[0] == -1:
 		sys.exit("ERROR - in 'else' of main program: User 1 does not have any ratings.")
@@ -663,11 +705,13 @@ else:
 	interpretations = []
 	loopstarttime = datetime.now().timestamp()
 	for i in range(len(users)):
-		print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
+		if verbose == 1:
+			print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
 		flag = 0
 		films2,ratings2 = userfilms(verbose,users[i],useratings)
 		if films2[0] == '-1' and ratings2[0] == -1:
-			print(users[i]+' has no ratings.\n')
+			if verbose == 1:
+				print(users[i]+' has no ratings.\n')
 			flag = 1
 		if flag == 0:
 			oglength2 = len(films2)
@@ -686,16 +730,20 @@ else:
 				interpretations = interpretations+['N/A']
 			# Find longest username for a neat output:
 			longest = len(max([user1+' ratings:',users[i]+' ratings:','matched films:'],key=len))
-			print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
-			print('{:{longest}} {:d}'.format(users[i]+' ratings:',oglength2,longest=longest))
-			print('{:{longest}} {:d}'.format('matched films:',len(finalfilms),longest=longest))
+			if verbose == 1:
+				print('{:{longest}} {:d}'.format(user1+' ratings:',oglength1,longest=longest))
+				print('{:{longest}} {:d}'.format(users[i]+' ratings:',oglength2,longest=longest))
+				print('{:{longest}} {:d}'.format('matched films:',len(finalfilms),longest=longest))
 			if len(finalfilms) > 0:
-				print('compatibility: {:.5f}'.format(results))
-				print('match rating = '+interpretation)
+				if verbose == 1:
+					print('compatibility: {:.5f}'.format(results))
+					print('match rating = '+interpretation)
 			else:
-				print('No film matches found.')
+				if verbose == 1:
+					print('No film matches found.')
 			elapsedtime = datetime.now().timestamp()-starttime
-			print('time elapsed (m) = {:.3f}'.format(elapsedtime/60.0))
+			if verbose == 1:
+				print('time elapsed (m) = {:.3f}'.format(elapsedtime/60.0))
 			loopelapsedtime = datetime.now().timestamp()-loopstarttime
 			timeperloop = loopelapsedtime/(i+1.0)
 			estimatedtime = (len(users)-(i+1.0))*timeperloop
@@ -704,10 +752,12 @@ else:
 			avgtime = np.mean(times)+np.std(times)
 			# If the loop is done, no time remaining:
 			if i == len(users)-1:
-				print('estimated time remaining (m) = {:.3f}{}'.format(0.0,'\n'))
+				if verbose == 1:
+					print('estimated time remaining (m) = {:.3f}{}'.format(0.0,'\n'))
 			# Otherwise estimate time remaining:
 			else:
-				print('estimated time remaining (m) = {:.3f}{}'.format((avgtime-elapsedtime)/60.0,'\n'))
+				if verbose == 1:
+					print('estimated time remaining (m) = {:.3f}{}'.format((avgtime-elapsedtime)/60.0,'\n'))
 		else:
 			scores = scores+[-1]
 
@@ -720,24 +770,29 @@ else:
 	scores.reverse()
 
 	# Print out results:
-	print('Comparing '+user1+' '+user2+'\n')
+	if verbose == 1:
+		print('Comparing '+user1+' '+user2+'\n')
 	# Find longest username for a neat output:
 	longest = len(max(sortedusers,key=len))
 	for i in range(len(sortedusers)):
-		print('{:{longest}} -- {:8.5f} -- {}'.format(sortedusers[i],scores[i],sortedinterpretations[i],longest=longest))
+		if verbose == 1:
+			print('{:{longest}} -- {:8.5f} -- {}'.format(sortedusers[i],scores[i],sortedinterpretations[i],longest=longest))
 
 	# Print final timing:
 	totaltime = datetime.now().timestamp()-starttime
-	print('{}Total time (m) = {:.3f}{}'.format('\n',totaltime/60.0,'\n'))
+	if verbose == 1:
+		print('{}Total time (m) = {:.3f}{}'.format('\n',totaltime/60.0,'\n'))
 
 	# Check if previous file exists for the current configuration:
 	newspread = 1
 	spreadpath = Path('Spreads/'+user1+'_'+user2+'_spread.txt')
 	if spreadpath.exists():
-		print('Previous spread found')
+		if verbose == 1:
+			print('Previous spread found')
 		# Ask if new file should be written:
 		spreadchoice = input(f"\nCompute new spread and overwrite the previous? (y/n):\n")
-		print('')
+		if verbose == 1:
+			print('')
 		if spreadchoice != "y":
 			newspread = 0
 	if newspread == 1:
@@ -766,17 +821,21 @@ else:
 	outpathtxt = Path('Output/'+user1+'_'+user2+'_output.txt')
 	outpathcsv = Path('Output/'+user1+'_'+user2+'_output.csv')
 	if outpathtxt.exists():
-		print('Previous text output found')
+		if verbose == 1:
+			print('Previous text output found')
 		# Ask if new text file should be written:
 		outtxtchoice = input(f"\nOverwrite the previous text output? (y/n):\n")
-		print('')
+		if verbose == 1:
+			print('')
 		if outtxtchoice != "y":
 			newouttxt = 0
 	if outpathcsv.exists():
-		print('Previous CSV output found')
+		if verbose == 1:
+			print('Previous CSV output found')
 		# Ask if new CSV file should be written:
 		outcsvchoice = input(f"\nOverwrite the previous CSV output? (y/n):\n")
-		print('')
+		if verbose == 1:
+			print('')
 		if outcsvchoice != "y":
 			newoutcsv = 0
 	if newouttxt == 1:

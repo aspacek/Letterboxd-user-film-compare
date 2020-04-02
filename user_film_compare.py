@@ -615,6 +615,30 @@ def inputread(verbose,inputfile):
 		# outcsvchoice
 		if keyword[i] == 'outcsvchoice' and equals[i] == '=':
 			outcsvchoice = parameter[i]
+	# Defaults, if parameters not found (user1 and user2 needed at least):
+	if not('user1' in locals()):
+		sys.exit('ERROR - in function "inputread" - user1 not defined in input file')
+	if not('user2' in locals()):
+		sys.exit('ERROR - in function "inputread" - user2 not defined in input file')
+	if not('system' in locals()):
+		print('\nsystem not defined in input file, set to 3 by default')
+		system = 3
+	if not('useratings' in locals()):
+		print('\nuseratings not defined in input file, set to use by default')
+		useratings = 'use'
+	if not('tocompute' in locals()):
+		print('\ntocompute not defined in input file, set to 10 by default')
+		tocompute = 10
+	if not('spreadchoice' in locals()):
+		print('\nspreadchoice not defined in input file, set to n by default')
+		spreadchoice = 'n'
+	if not('outtxtchoice' in locals()):
+		print('\nouttxtchoice not defined in input file, set to n by default')
+		outtxtchoice = 'n'
+	if not('outcsvchoice' in locals()):
+		print('\noutcsvchoice not defined in input file, set to n by default')
+		outcsvchoice = 'n'
+	# return all 
 	return user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice
 
 ############################

@@ -5,36 +5,36 @@
 # "tocompute = 10" can be set to any desired number
 
 # Letterboxd username 1:
-#user1 = moogic
+user1 = moogic
 
 # Letterboxd username 2,
 # or go through all of who username 1 is following,
 # or go through all of username 1's followers:
 #user2 = blankments
 #user2 = following
-#user2 = followers
+user2 = followers
 
 # Similarity scoring system to use (1, 2, or 3):
 #system = 1
 #system = 2
-#system = 3
+system = 3
 
 # Use previous saved user ratings, or create new ones? (use or new):
-#useratings = use
+useratings = use
 #useratings = new
 
 # If using following or followers, the number to compute, or 'all':
-#tocompute = all
+tocompute = all
 #tocompute = 10
 
 # Compute new spread and overwrite the previous? (y/n):
-#spreadchoice = y
+spreadchoice = y
 #spreadchoice = n
 
 # Overwrite the previous text output? (y/n):
-#outtxtchoice = y
+outtxtchoice = y
 #outtxtchoice = n
 
 # Overwrite the previous CSV output? (y/n):
-#outcsvchoice = y
+outcsvchoice = y
 #outcsvchoice = n

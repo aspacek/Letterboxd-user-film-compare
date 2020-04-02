@@ -22,12 +22,12 @@ sed -i.bak -e 's/#outtxtchoice = y/outtxtchoice = y/g' input.txt
 sed -i.bak -e 's/#outcsvchoice = y/outcsvchoice = y/g' input.txt
 python user_film_compare.py input.txt $verbose
 
-# system 2
+# following - system 2
 sed -i.bak -e 's/system = 1/#system = 1/g' input.txt
 sed -i.bak -e 's/#system = 2/system = 2/g' input.txt
 python user_film_compare.py input.txt $verbose
 
-# system 3
+# following - system 3
 sed -i.bak -e 's/system = 2/#system = 2/g' input.txt
 sed -i.bak -e 's/#system = 3/system = 3/g' input.txt
 python user_film_compare.py input.txt $verbose
@@ -39,12 +39,29 @@ sed -i.bak -e 's/system = 3/#system = 3/g' input.txt
 sed -i.bak -e 's/#system = 1/system = 1/g' input.txt
 python user_film_compare.py input.txt $verbose
 
-# system 2
+# followers - system 2
 sed -i.bak -e 's/system = 1/#system = 1/g' input.txt
 sed -i.bak -e 's/#system = 2/system = 2/g' input.txt
 python user_film_compare.py input.txt $verbose
 
-# system 3
+# followers - system 3
+sed -i.bak -e 's/system = 2/#system = 2/g' input.txt
+sed -i.bak -e 's/#system = 3/system = 3/g' input.txt
+python user_film_compare.py input.txt $verbose
+
+# both - system 1
+sed -i.bak -e 's/user2 = followers/#user2 = followers/g' input.txt
+sed -i.bak -e 's/#user2 = both/user2 = both/g' input.txt
+sed -i.bak -e 's/system = 3/#system = 3/g' input.txt
+sed -i.bak -e 's/#system = 1/system = 1/g' input.txt
+python user_film_compare.py input.txt $verbose
+
+# both - system 2
+sed -i.bak -e 's/system = 1/#system = 1/g' input.txt
+sed -i.bak -e 's/#system = 2/system = 2/g' input.txt
+python user_film_compare.py input.txt $verbose
+
+# both - system 3
 sed -i.bak -e 's/system = 2/#system = 2/g' input.txt
 sed -i.bak -e 's/#system = 3/system = 3/g' input.txt
 python user_film_compare.py input.txt $verbose

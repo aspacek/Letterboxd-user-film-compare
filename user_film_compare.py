@@ -347,40 +347,50 @@ def userfilms(verbose,user,useratings):
 # Function to grab who a user if following, or their followers:
 # INPUTS:
 #   user = string (valid Letterboxd user)
-#   what = string ('following' or 'followers')
+#   what = string ('following', 'followers', 'both')
 # OUTPUTS:
 #   users = string array (list of following/followers names)
 ##########################
 def userfollow(user,what):
-	# The base url of following or followers:
-	url = 'https://letterboxd.com/'+user+'/'+what+'/'
-	# Grab source code for first page:
-	r = requests.get(url)
-	source = r.text
+	# following, followers, or both?
+	if what == 'following':
+		what = ['following']
+	elif what == 'followers':
+		what = ['followers']
+	elif what == 'both':
+		what = ['following','followers']
 	# Initialize results:
 	users = []
-	# Start on page 1:
-	# Find the users:
-	users = users+getstrings('all','class="avatar -a40" href="/','/"',source)
-	# Now loop through the rest of the pages:
-	page = 2
-	# Check if a second page exists:
-	lastpage = '<div class="paginate-nextprev paginate-disabled"><span class="next">'
-	if source.find(lastpage) == -1:
-		flag = 0
-	else:
-		flag = 1
-	while flag == 0:
-		# Grab source code of the page:
-		r = requests.get(url+'page/'+str(page)+'/')
+	for i in range(len(what)):
+		# The base url of following or followers:
+		url = 'https://letterboxd.com/'+user+'/'+what[i]+'/'
+		# Grab source code for first page:
+		r = requests.get(url)
 		source = r.text
-		# Check if it's the last page:
-		if source.find(lastpage) != -1:
-			flag = 1
+		# Start on page 1:
 		# Find the users:
 		users = users+getstrings('all','class="avatar -a40" href="/','/"',source)
-		# Advance the page
-		page = page+1
+		# Now loop through the rest of the pages:
+		page = 2
+		# Check if a second page exists:
+		lastpage = '<div class="paginate-nextprev paginate-disabled"><span class="next">'
+		if source.find(lastpage) == -1:
+			flag = 0
+		else:
+			flag = 1
+		while flag == 0:
+			# Grab source code of the page:
+			r = requests.get(url+'page/'+str(page)+'/')
+			source = r.text
+			# Check if it's the last page:
+			if source.find(lastpage) != -1:
+				flag = 1
+			# Find the users:
+			users = users+getstrings('all','class="avatar -a40" href="/','/"',source)
+			# Advance the page
+			page = page+1
+	# Take only unique users:
+	users = list(set(users))
 	# Return results
 	return users
 
@@ -646,7 +656,7 @@ times = []
 
 # The two users being compared, or if all friends are being compared:
 #user1 = input(f"\nLetterboxd Username 1:\n")
-#user2 = input(f"\nLetterboxd Username 2, or 'following' or 'followers':\n")
+#user2 = input(f"\nLetterboxd Username 2, or 'following' or 'followers' or 'both':\n")
 #system = input(f"\nSystem:\n")
 #useratings = input(f"\nUse saved rating if available, or get all new ratings? (use/new)\n")
 
@@ -672,7 +682,7 @@ elif spreadpath2.exists():
 			spreadval = spreadval+[int(row[1])]
 
 # If just two users are being compared:
-if user2 != 'following' and user2 != 'followers':
+if user2 != 'following' and user2 != 'followers' and user2 != 'both':
 	if verbose == 1:
 		print('\nThe users being compared are '+user1+' and '+user2+'\n')
 	flag = 0
@@ -733,12 +743,13 @@ if user2 != 'following' and user2 != 'followers':
 else:
 
 	# Find all following or followers:
-	if user2 == 'following':
-		if verbose == 1:
+	if verbose == 1:
+		if user2 == 'following':
 			print('\nGrabbing all users that '+user1+' is following\n')
-	else:
-		if verbose == 1:
+		elif user2 == 'followers':
 			print('\nGrabbing all users that follow '+user1+'\n')
+		elif user2 == 'both':
+			print('\nGrabbing all users that both follow '+user1+' and who '+user1+' is following\n')
 	users = userfollow(user1,user2)
 	if verbose == 1:
 		print('There are '+str(len(users)))
@@ -836,7 +847,10 @@ else:
 
 	# Print out results:
 	if verbose == 1:
-		print('Comparing '+user1+' '+user2+'\n')
+		if user2 == 'both':
+			print('Comparing '+user1+' following and followers\n')
+		else:
+			print('Comparing '+user1+' '+user2+'\n')
 	# Find longest username for a neat output:
 	longest = len(max(sortedusers,key=len))
 	for i in range(len(sortedusers)):

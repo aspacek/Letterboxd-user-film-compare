@@ -6,8 +6,8 @@ user1 = moogic
 # or go through all of who username 1 is following,
 # or go through all of username 1's followers:
 #user2 = blankments
-user2 = following
-#user2 = followers
+#user2 = following
+user2 = followers
 
 # Similarity scoring system to use (1, 2, or 3):
 #system = 1
@@ -19,17 +19,17 @@ useratings = use
 #useratings = new
 
 # If using following or followers, the number to compute, or 'all':
-#tocompute = all
-tocompute = 10
+tocompute = all
+#tocompute = 10
 
 # Compute new spread and overwrite the previous? (y/n):
-#spreadchoice = y
-spreadchoice = n
+spreadchoice = y
+#spreadchoice = n
 
 # Overwrite the previous text output? (y/n):
-#outtxtchoice = y
-outtxtchoice = n
+outtxtchoice = y
+#outtxtchoice = n
 
 # Overwrite the previous CSV output? (y/n):
-#outcsvchoice = y
-outcsvchoice = n
+outcsvchoice = y
+#outcsvchoice = n

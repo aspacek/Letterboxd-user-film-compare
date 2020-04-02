@@ -824,6 +824,7 @@ else:
 					print('estimated time remaining (m) = {:.3f}{}'.format((avgtime-elapsedtime)/60.0,'\n'))
 		else:
 			scores = scores+[-1]
+			interpretations = interpretations+['N/A']
 
 	# Sort all the scores:
 	sortedusers = [name for number,name in sorted(zip(scores,users))]
@@ -849,7 +850,7 @@ else:
 
 	# Check if previous file exists for the current configuration:
 	newspread = 1
-	spreadpath = Path('Spreads/'+user1+'_'+user2+'_spread.txt')
+	spreadpath = Path('Spreads/'+user1+'_'+user2+'_'+str(system)+'_spread.txt')
 	if spreadpath.exists():
 		if verbose == 1:
 			print('Previous spread found')
@@ -867,7 +868,7 @@ else:
 			if scores[i] >= 0.0:
 				cutscores = cutscores+[scores[i]]
 				cutusers = cutusers+[sortedusers[i]]
-		spreadfile = open('Spreads/'+user1+'_'+user2+'_spread.txt','w')
+		spreadfile = open('Spreads/'+user1+'_'+user2+'_'+str(system)+'_spread.txt','w')
 		bins = [0,1,2,3,4,5,6,7,8,9,10]
 		hist,bin_edges = np.histogram(cutscores,bins=bins)
 		midpoints = [value-0.5 for value in range(len(bins))[1:]]
@@ -876,14 +877,14 @@ else:
 		plt.plot(midpoints,hist)
 		plt.xlabel('Compatibility Rating')
 		plt.ylabel('Number In Bin')
-		plt.savefig('Spreads/'+user1+'_'+user2+'_spread_plot.png')
+		plt.savefig('Spreads/'+user1+'_'+user2+'_'+str(system)+'_spread_plot.png')
 		spreadfile.close()
 
 	# Create output files, if necessary/wanted:
 	newouttxt = 1
 	newoutcsv = 1
-	outpathtxt = Path('Output/'+user1+'_'+user2+'_output.txt')
-	outpathcsv = Path('Output/'+user1+'_'+user2+'_output.csv')
+	outpathtxt = Path('Output/'+user1+'_'+user2+'_'+str(system)+'_output.txt')
+	outpathcsv = Path('Output/'+user1+'_'+user2+'_'+str(system)+'_output.csv')
 	if outpathtxt.exists():
 		if verbose == 1:
 			print('Previous text output found')
@@ -903,13 +904,13 @@ else:
 		if outcsvchoice != "y":
 			newoutcsv = 0
 	if newouttxt == 1:
-		outfile = open('Output/'+user1+'_'+user2+'_output.txt','w')
+		outfile = open('Output/'+user1+'_'+user2+'_'+str(system)+'_output.txt','w')
 		for i in range(len(sortedusers)):
 			outfile.write('{:{longest}} {:8.5f}  {}{}'.format(sortedusers[i],scores[i],sortedinterpretations[i],'\n',longest=longest))
 		# Close output file:
 		outfile.close()
 	if newoutcsv == 1:
-		with open('Output/'+user1+'_'+user2+'_output.csv', mode='w') as outfile:
+		with open('Output/'+user1+'_'+user2+'_'+str(system)+'_output.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			for i in range(len(sortedusers)):
 				csvwriter.writerow([sortedusers[i],scores[i],sortedinterpretations[i]])

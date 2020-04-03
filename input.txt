@@ -12,31 +12,31 @@ user1 = moogic
 # or go through all of username 1's followers,
 # or go through both following and followers with "both":
 #user2 = blankments
-#user2 = both
+user2 = both
 #user2 = following
 #user2 = followers
 
 # Similarity scoring system to use (1, 2, or 3):
 #system = 1
 #system = 2
-#system = 3
+system = 3
 
 # Use previous saved user ratings, or create new ones? (use or new):
-#useratings = use
+useratings = use
 #useratings = new
 
 # If using following or followers, the number to compute, or 'all':
-#tocompute = all
+tocompute = all
 #tocompute = 10
 
 # Compute new spread and overwrite the previous? (y/n):
-#spreadchoice = y
+spreadchoice = y
 #spreadchoice = n
 
 # Overwrite the previous text output? (y/n):
-#outtxtchoice = y
+outtxtchoice = y
 #outtxtchoice = n
 
 # Overwrite the previous CSV output? (y/n):
-#outcsvchoice = y
+outcsvchoice = y
 #outcsvchoice = n

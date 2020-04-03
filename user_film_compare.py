@@ -574,8 +574,18 @@ def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
 
 ###############################################
 # Function to read in and parse the input file:
-#
-#
+# INPUTS:
+#   verbose   = integer (0 or 1)
+#   inputfile = string (name of input file)
+# OUTPUTS:
+#   user1        = string (main user)
+#   user2        = string (2nd user, or 'following', 'followers', or 'both')
+#   system       = integer (1, 2, or 3)
+#   useratings   = string ('use' or 'new')
+#   tocompute    = string ('all' or a number of users to compute)
+#   spreadchoice = string ('y' or 'n')
+#   outtxtchoice = string ('y' or 'n')
+#   outcsvchoice = string ('y' or 'n')
 #################################
 def inputread(verbose,inputfile):
 	# Read in the whole input file:
@@ -679,19 +689,15 @@ if verbose == 1:
 starttime = datetime.now().timestamp()
 times = []
 
-# The two users being compared, or if all friends are being compared:
-#user1 = input(f"\nLetterboxd Username 1:\n")
-#user2 = input(f"\nLetterboxd Username 2, or 'following' or 'followers' or 'both':\n")
-#system = input(f"\nSystem:\n")
-#useratings = input(f"\nUse saved rating if available, or get all new ratings? (use/new)\n")
-
 # Check for prior spread file:
 spreadyes = 0
 spreadpath1 = Path('Spreads/'+user1+'_both_'+str(system)+'_spread.txt')
 spreadpath2 = Path('Spreads/'+user1+'_following_'+str(system)+'_spread.txt')
 spreadpath3 = Path('Spreads/'+user1+'_followers_'+str(system)+'_spread.txt')
+# Arrays for bin midpoints and bin values:
 spreadmidpt = []
 spreadval = []
+# Priority order is: both - following - followers
 if spreadpath1.exists():
 	spreadyes = 1
 	with open('Spreads/'+user1+'_both_'+str(system)+'_spread.txt') as csv_file:
@@ -724,6 +730,7 @@ if user2 != 'following' and user2 != 'followers' and user2 != 'both':
 	if verbose == 1:
 		print('Grabbing all film ratings from '+user1+'\n')
 	films1,ratings1 = userfilms(verbose,user1,useratings)
+	# If no ratings found:
 	if films1[0] == '-1' and ratings1[0] == -1:
 		if verbose == 1:
 			print(user1+' has no ratings!\n')
@@ -733,12 +740,13 @@ if user2 != 'following' and user2 != 'followers' and user2 != 'both':
 	if verbose == 1:
 		print('Grabbing all film ratings from '+user2+'\n')
 	films2,ratings2 = userfilms(verbose,user2,useratings)
+	# If no ratings found:
 	if films2 == '-1' and ratings2 == -1:
 		if verbose == 1:
 			print(user2+' has no ratings!\n')
 		flag = 1
 	
-	# Find all matching films:
+	# Find all matching films, if both users had ratings:
 	if flag == 0:
 		if verbose == 1:
 			print('Finding matching films\n')
@@ -754,15 +762,17 @@ if user2 != 'following' and user2 != 'followers' and user2 != 'both':
 			print('{:{longest}} {:d}'.format(user2+' ratings:',oglength2,longest=longest))
 			print('{:{longest}} {:d}{}'.format('matched films:',len(finalfilms),'\n',longest=longest))
 
-		# Get the similarity score and print results:
+		# Get the similarity score and print results, if there are any:
 		if len(finalfilms) > 0:
 			results = scoring(finalfilms,finalratings1,finalratings2,system)
 			if verbose == 1:
 				print('RESULTS = {:.3f}{}'.format(results,'\n'))
 				print('MATCH RATING = '+ratinginterpretation(spreadyes,results,spreadmidpt,spreadval)+'\n')
+		# Otherwise no score to get:
 		else:
 			if verbose == 1:
 				print('No film matches found.\n')
+	# Otherwise nothing to do:
 	else:
 		if verbose == 1:
 			print('No films to match.\n')
@@ -772,7 +782,7 @@ if user2 != 'following' and user2 != 'followers' and user2 != 'both':
 	if verbose == 1:
 		print('Total time (s) = {:.3f}{}'.format(totaltime,'\n'))
 
-# Else go through following or followers
+# Else go through following or followers or both:
 else:
 
 	# Find all following or followers:
@@ -788,9 +798,9 @@ else:
 		print('There are '+str(len(users)))
 
 	# Check if all or some should be computed:
-	#tocompute = input(f"\nChoose a number to compute:\n")
 	if tocompute == 'all':
 		tocompute = len(users)
+	# If input number is too big, limit it to 'all':
 	elif int(tocompute) > len(users):
 		tocompute = len(users)
 	else:
@@ -812,15 +822,18 @@ else:
 	scores = []
 	interpretations = []
 	loopstarttime = datetime.now().timestamp()
+	# Loop over all desired users:
 	for i in range(len(users)):
 		if verbose == 1:
 			print('Comparing with '+users[i]+' ('+str(i+1)+'/'+str(len(users))+')')
 		flag = 0
+		# Grab films of given user:
 		films2,ratings2 = userfilms(verbose,users[i],useratings)
 		if films2[0] == '-1' and ratings2[0] == -1:
 			if verbose == 1:
 				print(users[i]+' has no ratings.\n')
 			flag = 1
+		# If ratings exist, match them with user1:
 		if flag == 0:
 			oglength2 = len(films2)
 			newfilms1 = [value for value in films1]
@@ -828,6 +841,7 @@ else:
 			finalfilms,finalratings1,finalratings2 = filmmatch(newfilms1,newratings1,films2,ratings2)
 			if finalfilms[0] == '-1' and finalratings1[0] == -1 and finalratings2[0] == -1:
 				finalfilms = []
+			# If matches exist, compute the similarity score and interpretation:
 			if len(finalfilms) > 0:
 				results = scoring(finalfilms,finalratings1,finalratings2,system)
 				interpretation = ratinginterpretation(spreadyes,results,spreadmidpt,spreadval)
@@ -849,6 +863,7 @@ else:
 			else:
 				if verbose == 1:
 					print('No film matches found.')
+			# Figure out elapsed time and estimated time remaining:
 			elapsedtime = datetime.now().timestamp()-starttime
 			if verbose == 1:
 				print('time elapsed (m) = {:.3f}'.format(elapsedtime/60.0))
@@ -866,11 +881,12 @@ else:
 			else:
 				if verbose == 1:
 					print('estimated time remaining (m) = {:.3f}{}'.format((avgtime-elapsedtime)/60.0,'\n'))
+		# If ratings don't exist, move on:
 		else:
 			scores = scores+[-1]
 			interpretations = interpretations+['N/A']
 
-	# Sort all the scores:
+	# Sort all the users and interpretations by the scores:
 	sortedusers = [name for number,name in sorted(zip(scores,users))]
 	sortedusers.reverse()
 	sortedinterpretations = [name for number,name in sorted(zip(scores,interpretations))]
@@ -905,6 +921,7 @@ else:
 		#spreadchoice = input(f"\nCompute new spread and overwrite the previous? (y/n):\n")
 		if verbose == 1:
 			print('')
+		# Doing "!= y" instead of "= n" just to always err on not overwriting files.
 		if spreadchoice != "y":
 			newspread = 0
 	if newspread == 1:
@@ -917,6 +934,7 @@ else:
 				cutscores = cutscores+[scores[i]]
 				cutusers = cutusers+[sortedusers[i]]
 				cutinterpretations = cutinterpretations+[sortedinterpretations[i]]
+		# Save spread file and plot using "bins" given below:
 		spreadfile = open('Spreads/'+user1+'_'+user2+'_'+str(system)+'_spread.txt','w')
 		bins = [0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10]
 		width = bins[1]-bins[0]
@@ -938,27 +956,27 @@ else:
 	if outpathtxt.exists():
 		if verbose == 1:
 			print('Previous text output found')
-		# Ask if new text file should be written:
-		#outtxtchoice = input(f"\nOverwrite the previous text output? (y/n):\n")
 		if verbose == 1:
 			print('')
+		# Doing "!= y" instead of "= n" just to always err on not overwriting files.
 		if outtxtchoice != "y":
 			newouttxt = 0
 	if outpathcsv.exists():
 		if verbose == 1:
 			print('Previous CSV output found')
-		# Ask if new CSV file should be written:
-		#outcsvchoice = input(f"\nOverwrite the previous CSV output? (y/n):\n")
 		if verbose == 1:
 			print('')
+		# Doing "!= y" instead of "= n" just to always err on not overwriting files.
 		if outcsvchoice != "y":
 			newoutcsv = 0
+	# If a text file should be written, write it:
 	if newouttxt == 1:
 		outfile = open('Output/'+user1+'_'+user2+'_'+str(system)+'_output.txt','w')
 		for i in range(len(sortedusers)):
 			outfile.write('{:{longest}} {:8.5f}  {}{}'.format(sortedusers[i],scores[i],sortedinterpretations[i],'\n',longest=longest))
 		# Close output file:
 		outfile.close()
+	# If a CSV file should be written, write it:
 	if newoutcsv == 1:
 		with open('Output/'+user1+'_'+user2+'_'+str(system)+'_output.csv', mode='w') as outfile:
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

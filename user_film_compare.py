@@ -8,7 +8,7 @@ import csv
 
 ##
 ## Written by Alex Spacek
-## March 2020 - April 2020
+## March 2020 - May 2020
 ##
 
 #########################
@@ -103,6 +103,390 @@ import csv
 # For 1.0 to each lower rating, -0.5 pts
 # 	1.0-0.5 = 9.5 pts
 ########################
+
+#####################################
+# MAINPROGRAM
+# The main program that is run first.
+# INPUTS:
+#   inputs = string array ([0] = program filename, [1] = input filename, [2] = verbose)
+# OUTPUTS:
+#   none
+########################
+def mainprogram(inputs):
+	# Grabs values entered through execution, i.e. >>python user_film_compare.py input.txt 1
+	# For an input file called 'input.txt' and verbose = 1 (print out info)
+	inputfile = inputs[1]
+	verbose = int(inputs[2])
+	# Make sure inputs are valid:
+	inpath = Path(inputfile)
+	if not(inpath.exists()):
+		sys.exit('ERROR - in main program - Input file does not exist')
+	if verbose != 0 and verbose != 1:
+		sys.exit('ERROR - in main program - Verbose not 0 or 1')
+	# Read in input file:
+	user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice = inputread(verbose,inputfile)
+	# Print beginning text:
+	printout(verbose,'beginning','','','','','')
+	# Start timing:
+	starttime = datetime.now().timestamp()
+	# Check for a prior spread file:
+	spreadboth = 'Spreads/'+user1+'_both_'+str(system)+'_spread.txt'
+	spreadfollowing = 'Spreads/'+user1+'_following_'+str(system)+'_spread.txt'
+	spreadfollowers = 'Spreads/'+user1+'_followers_'+str(system)+'_spread.txt'
+	spreadyes,spreadmidpt,spreadval = spreadcheck([spreadboth,spreadfollowing,spreadfollowers])
+	# If just two users are being compared:
+	if user2 != 'following' and user2 != 'followers' and user2 != 'both':
+		useruser(verbose,user1,user2,useratings,system,spreadyes,spreadmidpt,spreadval)
+	# Else go through following or followers or both:
+	else:
+		userother(verbose,starttime,user1,user2,tocompute,useratings,system,spreadyes,spreadmidpt,spreadval,spreadchoice,outtxtchoice,outcsvchoice)
+
+###############################################
+# INPUTREAD
+# Function to read in and parse the input file:
+# INPUTS:
+#   verbose   = integer (0 or 1)
+#   inputfile = string (name of input file)
+# OUTPUTS:
+#   user1        = string (main user)
+#   user2        = string (2nd user, or 'following', 'followers', or 'both')
+#   system       = integer (1, 2, or 3)
+#   useratings   = string ('use' or 'new')
+#   tocompute    = string ('all' or a number of users to compute)
+#   spreadchoice = string ('y' or 'n')
+#   outtxtchoice = string ('y' or 'n')
+#   outcsvchoice = string ('y' or 'n')
+#################################
+def inputread(verbose,inputfile):
+	# Read in the whole input file:
+	with open(inputfile) as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=' ',skipinitialspace=True)
+		keyword = []
+		equals = []
+		parameter = []
+		for row in csv_reader:
+			if len(row) == 3:
+				keyword = keyword+[row[0]]
+				equals = equals+[row[1]]
+				parameter = parameter+[row[2]]
+	# Get parameters:
+	for i in range(len(keyword)):
+		# user1
+		if keyword[i] == 'user1' and equals[i] == '=':
+			user1 = parameter[i]
+		# user2
+		if keyword[i] == 'user2' and equals[i] == '=':
+			user2 = parameter[i]
+		# system
+		if keyword[i] == 'system' and equals[i] == '=':
+			system = int(parameter[i])
+		# useratings
+		if keyword[i] == 'useratings' and equals[i] == '=':
+			useratings = parameter[i]
+		# tocompute
+		if keyword[i] == 'tocompute' and equals[i] == '=':
+			tocompute = parameter[i]
+		# spreadchoice
+		if keyword[i] == 'spreadchoice' and equals[i] == '=':
+			spreadchoice = parameter[i]
+		# outtxtchoice
+		if keyword[i] == 'outtxtchoice' and equals[i] == '=':
+			outtxtchoice = parameter[i]
+		# outcsvchoice
+		if keyword[i] == 'outcsvchoice' and equals[i] == '=':
+			outcsvchoice = parameter[i]
+	# Defaults, if parameters not found (user1 and user2 needed at least):
+	if not('user1' in locals()):
+		sys.exit('ERROR - in function "inputread" - user1 not defined in input file')
+	if not('user2' in locals()):
+		printout(verbose,'inputcheck','user2','both','','','')
+		user2 = 'both'
+	if not('system' in locals()):
+		printout(verbose,'inputcheck','system','3','','','')
+		system = 3
+	if not('useratings' in locals()):
+		printout(verbose,'inputcheck','userating','use','','','')
+		useratings = 'use'
+	if not('tocompute' in locals()):
+		printout(verbose,'inputcheck','tocompute','10','','','')
+		tocompute = 10
+	if not('spreadchoice' in locals()):
+		printout(verbose,'inputcheck','spreadchoice','n','','','')
+		spreadchoice = 'n'
+	if not('outtxtchoice' in locals()):
+		printout(verbose,'inputcheck','outtxtchoice','n','','','')
+		outtxtchoice = 'n'
+	if not('outcsvchoice' in locals()):
+		printout(verbose,'inputcheck','outcsvchoice','n','','','')
+		outcsvchoice = 'n'
+	# return all 
+	return user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice
+
+###############################################
+# PRINTOUT
+# Function to do various prints, if verbose = 1
+# INPUTS:
+#   verbose = integer (0 or 1)
+#   what    = string (the type of thing to be print)
+#   in1     = anything (1st input, if necessary)
+#   in2     = anything (2nd input, if necessary)
+#   in3     = anything (3rd input, if necessary)
+#   in4     = anything (4th input, if necessary)
+#   in5     = anything (5th input, if necessary)
+# OUTPUTS:
+#   none
+###############################################
+def printout(verbose,what,in1,in2,in3,in4,in5):
+	# Only print out if verbose = 1:
+	if verbose == 1:
+		if what == 'inputcheck':
+			print('\n'+in1+' not defined in input file, set to '+in2+' by default')
+		elif what == 'beginning':
+			print('\n**Note**')
+			print('For a fresh run, each user takes about 30 seconds to process.')
+			print('So, comparing two users takes about 1 minute.')
+			print('When comparing to following or followers, here are some estimations:')
+			print('      10 users = 5 minutes')
+			print('     100 users = 1 hour')
+			print('    1000 users = 8 hours')
+			print('These times will be greatly shortened if user film files already exist.')
+			print('\nSystems:')
+			print('1 = even difference points between 1 and 10')
+			print('2 = manual distribution in point differences by reddit user /u/d_anda')
+			print('3 = complex point system by aes, giving different points depending on actual ratings (RECOMMENDED)')
+		elif what == 'compare':
+			print('\nThe users being compared are '+in1+' and '+in2+'\n')
+		elif what == 'grab':
+			print('Grabbing all film ratings from '+in1+'\n')
+		elif what == 'noratings':
+			print(in1+' has no ratings!\n')
+		elif what == 'ratingsexist':
+			print('Using existing ratings file for '+in1+'!\n')
+		elif what == 'matching':
+			print('Finding matching films\n')
+		elif what == 'matched':
+			# Find longest username for a neat output:
+			longest = len(max([in1+' ratings:',in2+' ratings:','matched films:'],key=len))
+			print('{:{longest}} {:d}'.format(in1+' ratings:',in3,longest=longest))
+			print('{:{longest}} {:d}'.format(in2+' ratings:',in4,longest=longest))
+			print('{:{longest}} {:d}{}'.format('matched films:',len(in5),'\n',longest=longest))
+		elif what == 'useruserresults':
+			print('RESULTS = {:.3f}{}'.format(in1,'\n'))
+			print('MATCH RATING = '+ratinginterpretation(in2,in1,in3,in4)+'\n')
+		elif what == 'nomatches':
+			print('No film matches found.'+in1)
+		elif what == 'nofilms':
+			print('No films to match.\n')
+		elif what == 'userusertime':
+			print('Total time (s) = {:.3f}{}'.format(in1,'\n'))
+		elif what == 'userotherbegin':
+			if in1 == 'following':
+				print('\nGrabbing all users that '+in2+' is following\n')
+			elif in1 == 'followers':
+				print('\nGrabbing all users that follow '+in2+'\n')
+			elif in1 == 'both':
+				print('\nGrabbing all users that both follow '+in2+' and who '+in2+' is following\n')
+		elif what == 'usernum':
+			print('There are '+str(len(in1)))
+		elif what == 'filmgrab':
+			print('\nGrabbing all film ratings from '+in1+'\n')
+		elif what == 'usercompare':
+			print('Comparing with '+in1+' ('+str(in2)+'/'+str(len(in3))+')')
+		elif what == 'userotherresults':
+			print('compatibility: {:.5f}'.format(in1))
+			print('match rating = '+in2)
+		elif what == 'timeelapsed':
+			print('time elapsed (m) = {:.3f}'.format(in1))
+		elif what == 'timeestimate':
+			print('estimated time remaining (m) = {:.3f}{}'.format(in1,'\n'))
+		elif what == 'userothercompare':
+			if in1 == 'both':
+				print('Comparing '+in2+' following and followers\n')
+			else:
+				print('Comparing '+in2+' '+in1+'\n')
+		elif what == 'userothermatched':
+			# Find longest username for a neat output:
+			longest = len(max(in1,key=len))
+			for i in range(len(in1)):
+				print('{:{longest}} -- {:8.5f} -- {}'.format(in1[i],in2[i],in3[i],longest=longest))
+		elif what == 'userothertime':
+			print('{}Total time (m) = {:.3f}{}'.format('\n',in1,'\n'))
+		elif what == 'previousspread':
+			print('Previous spread found\n')
+		elif what == 'previoustext':
+			print('Previous text output found\n')
+		elif what == 'previouscsv':
+			print('Previous CSV output found\n')
+
+######################################
+# RATINGINTERPRETATION
+# Function to interpret ratings match:
+# INPUTS:
+#   spreadyes   = integer (0 or 1)
+#   rating      = float (the similarity score to interpret)
+#   spreadmidpt = 
+# OUTPUTS:
+#################################################################
+def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
+	# If there isn't a prior spread, use default:
+	# 0-2:  Worst match
+	# 2-3:  Terrible match
+	# 3-4:  Really bad match
+	# 4-5:  Bad match
+	# 5-6:  Poor match
+	# 6-7:  Typical match
+	# 7-8:  Good match
+	# 8-9:  Great match
+	# 9-10: Amazing match
+	if spreadyes == 0:
+		if rating > 10.0:
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is >10')
+		elif rating > 9.0:
+			return 'Amazing match'
+		elif rating > 8.0:
+			return 'Great match'
+		elif rating > 7.0:
+			return 'Good match'
+		elif rating > 6.0:
+			return 'Typical match'
+		elif rating > 5.0:
+			return 'Poor match'
+		elif rating > 4.0:
+			return 'Bad match'
+		elif rating > 3.0:
+			return 'Really bad match'
+		elif rating > 2.0:
+			return 'Terrible match'
+		elif rating >= 0.0:
+			return 'Worst match'
+		else:
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is <0')
+	# Otherwise extract from the data:
+	elif spreadyes == 1:
+		ratings = []
+		# Combine the saved spread and compute the mean and standard deviation:
+		for i in range(len(spreadval)):
+			ratings = ratings+[spreadmidpt[i] for val in range(spreadval[i])]
+		spreadmean = np.mean(ratings)
+		spreadstddev = np.std(ratings)
+		# Interpret the similarity score based on mean and standard deviations:
+		if rating > 10.0:
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is >10')
+		if rating > spreadmean+2.0*spreadstddev:
+			return 'Amazing match'
+		elif rating > spreadmean+1.5*spreadstddev:
+			return 'Great match'
+		elif rating > spreadmean+1.0*spreadstddev:
+			return 'Good match'
+		elif rating > spreadmean+0.0*spreadstddev:
+			return 'Typical match'
+		elif rating > spreadmean-1.0*spreadstddev:
+			return 'Poor match'
+		elif rating > spreadmean-1.5*spreadstddev:
+			return 'Bad match'
+		elif rating > spreadmean-2.0*spreadstddev:
+			return 'Really bad match'
+		elif rating > spreadmean-2.5*spreadstddev:
+			return 'Terrible match'
+		elif rating >= 0.0:
+			return 'Worst match'
+		else:
+			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is <0')
+
+############################################################################
+# SPREADCHECK
+# Function to see if previous spread exists to use for score interpretation.
+# INPUTS:
+#   spreadpath = string array (the various spread paths to check, in priority order)
+# OUTPUTS:
+#   spreadyes   = integer (0 or 1)
+#   spreadmidpt = float array (midpoints of the spread bins)
+#   spreadval   = integer array (the values of the spread bins)
+############################
+def spreadcheck(spreadpath):
+	spreadyes = 0
+	# Arrays for bin midpoints and bin values:
+	spreadmidpt = []
+	spreadval = []
+	# Priority order is given by input array:
+	i = 0
+	while spreadyes == 0 and i < len(spreadpath):
+		pathspread = Path(spreadpath[i])
+		# If current path exists, use it:
+		if pathspread.exists():
+			spreadyes = 1
+			with open(spreadpath[i]) as csv_file:
+				csv_reader = csv.reader(csv_file, delimiter=' ')
+				for row in csv_reader:
+					spreadmidpt = spreadmidpt+[float(row[0])]
+					spreadval = spreadval+[int(row[1])]
+		i = i+1
+	return spreadyes,spreadmidpt,spreadval
+
+#####################################################################
+# USERUSER
+# Function to compare the similarity between a user and another user.
+# INPUTS:
+#   verbose     = 
+#   user1       =
+#   user2       = 
+#   useratings  = 
+#   system      = 
+#   spreadyes   =
+#   spreadmidpt = 
+#   spreadval   =
+# OUTPUTS:
+#   none
+####################################################################################
+def useruser(verbose,user1,user2,useratings,system,spreadyes,spreadmidpt,spreadval):
+	printout(verbose,'compare',user1,user2,'','','')
+	flag = 0
+	# Working on user1:
+	printout(verbose,'grab',user1,'','','','')
+	films1,ratings1 = userfilms(verbose,user1,useratings)
+	# If no ratings found:
+	if films1[0] == '-1' and ratings1[0] == -1:
+		printout(verbose,'noratings',user1,'','','','')
+		flag = 1
+	# Working on user2:
+	printout(verbose,'grab',user2,'','','','')
+	films2,ratings2 = userfilms(verbose,user2,useratings)
+	# If no ratings found:
+	if films2 == '-1' and ratings2 == -1:
+		printout(verbose,'noratings',user2,'','','','')
+		flag = 1
+	# Find all matching films, if both users had ratings:
+	if flag == 0:
+		printout(verbose,'matching','','','','','')
+		# Preserve original list lengths:
+		oglength1 = len(films1)
+		oglength2 = len(films2)
+		finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
+		if finalfilms[0] == '-1' and finalratings1[0] == -1 and finalratings2[0] == -1:
+			finalfilms = []
+		# Print out details:
+		printout(verbose,'matched',user1,user2,oglenth1,oglength2,finalfilms)
+		# Get the similarity score and print results, if there are any:
+		if len(finalfilms) > 0:
+			results = scoring(finalfilms,finalratings1,finalratings2,system)
+			printout(verbose,'useruserresults',results,spreadyes,spreadmidpt,spreadval,'')
+		# Otherwise no score to get:
+		else:
+			printout(verbose,'nomatches','\n','','','','')
+	# Otherwise nothing to do:
+	else:
+		printout(verbose,'nofilms','','','','','')
+
+	# Print final timing:
+	totaltime = datetime.now().timestamp()-starttime
+	printout(verbose,'userusertime',totaltime,'','','','')
+
+
+
+
+
+
+
 
 ## Note: figure out what this is doing and add comments.
 ############################################################
@@ -497,308 +881,6 @@ def scoring(finalfilms,finalratings1,finalratings2,system):
 		result = 0.0
 	return result
 
-######################################
-# Function to interpret ratings match:
-# INPUTS:
-#   spreadyes   = integer (0 or 1)
-#   rating      = float (the similarity score to interpret)
-#   spreadmidpt = 
-# OUTPUTS:
-#################################################################
-def ratinginterpretation(spreadyes,rating,spreadmidpt,spreadval):
-	# If there isn't a prior spread, use default:
-	# 0-2:  Worst match
-	# 2-3:  Terrible match
-	# 3-4:  Really bad match
-	# 4-5:  Bad match
-	# 5-6:  Poor match
-	# 6-7:  Typical match
-	# 7-8:  Good match
-	# 8-9:  Great match
-	# 9-10: Amazing match
-	if spreadyes == 0:
-		if rating > 10.0:
-			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is >10')
-		elif rating > 9.0:
-			return 'Amazing match'
-		elif rating > 8.0:
-			return 'Great match'
-		elif rating > 7.0:
-			return 'Good match'
-		elif rating > 6.0:
-			return 'Typical match'
-		elif rating > 5.0:
-			return 'Poor match'
-		elif rating > 4.0:
-			return 'Bad match'
-		elif rating > 3.0:
-			return 'Really bad match'
-		elif rating > 2.0:
-			return 'Terrible match'
-		elif rating >= 0.0:
-			return 'Worst match'
-		else:
-			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is <0')
-	# Otherwise extract from the data:
-	elif spreadyes == 1:
-		ratings = []
-		# Combine the saved spread and compute the mean and standard deviation:
-		for i in range(len(spreadval)):
-			ratings = ratings+[spreadmidpt[i] for val in range(spreadval[i])]
-		spreadmean = np.mean(ratings)
-		spreadstddev = np.std(ratings)
-		# Interpret the similarity score based on mean and standard deviations:
-		if rating > 10.0:
-			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is >10')
-		if rating > spreadmean+2.0*spreadstddev:
-			return 'Amazing match'
-		elif rating > spreadmean+1.5*spreadstddev:
-			return 'Great match'
-		elif rating > spreadmean+1.0*spreadstddev:
-			return 'Good match'
-		elif rating > spreadmean+0.0*spreadstddev:
-			return 'Typical match'
-		elif rating > spreadmean-1.0*spreadstddev:
-			return 'Poor match'
-		elif rating > spreadmean-1.5*spreadstddev:
-			return 'Bad match'
-		elif rating > spreadmean-2.0*spreadstddev:
-			return 'Really bad match'
-		elif rating > spreadmean-2.5*spreadstddev:
-			return 'Terrible match'
-		elif rating >= 0.0:
-			return 'Worst match'
-		else:
-			sys.exit('ERROR - in function "ratinginterpretation" - Similarity score is <0')
-
-###############################################
-# Function to read in and parse the input file:
-# INPUTS:
-#   verbose   = integer (0 or 1)
-#   inputfile = string (name of input file)
-# OUTPUTS:
-#   user1        = string (main user)
-#   user2        = string (2nd user, or 'following', 'followers', or 'both')
-#   system       = integer (1, 2, or 3)
-#   useratings   = string ('use' or 'new')
-#   tocompute    = string ('all' or a number of users to compute)
-#   spreadchoice = string ('y' or 'n')
-#   outtxtchoice = string ('y' or 'n')
-#   outcsvchoice = string ('y' or 'n')
-#################################
-def inputread(verbose,inputfile):
-	# Read in the whole input file:
-	with open(inputfile) as csv_file:
-		csv_reader = csv.reader(csv_file, delimiter=' ',skipinitialspace=True)
-		keyword = []
-		equals = []
-		parameter = []
-		for row in csv_reader:
-			if len(row) == 3:
-				keyword = keyword+[row[0]]
-				equals = equals+[row[1]]
-				parameter = parameter+[row[2]]
-	# Get parameters:
-	for i in range(len(keyword)):
-		# user1
-		if keyword[i] == 'user1' and equals[i] == '=':
-			user1 = parameter[i]
-		# user2
-		if keyword[i] == 'user2' and equals[i] == '=':
-			user2 = parameter[i]
-		# system
-		if keyword[i] == 'system' and equals[i] == '=':
-			system = int(parameter[i])
-		# useratings
-		if keyword[i] == 'useratings' and equals[i] == '=':
-			useratings = parameter[i]
-		# tocompute
-		if keyword[i] == 'tocompute' and equals[i] == '=':
-			tocompute = parameter[i]
-		# spreadchoice
-		if keyword[i] == 'spreadchoice' and equals[i] == '=':
-			spreadchoice = parameter[i]
-		# outtxtchoice
-		if keyword[i] == 'outtxtchoice' and equals[i] == '=':
-			outtxtchoice = parameter[i]
-		# outcsvchoice
-		if keyword[i] == 'outcsvchoice' and equals[i] == '=':
-			outcsvchoice = parameter[i]
-	# Defaults, if parameters not found (user1 and user2 needed at least):
-	if not('user1' in locals()):
-		sys.exit('ERROR - in function "inputread" - user1 not defined in input file')
-	if not('user2' in locals()):
-		printout(verbose,'inputcheck','user2','both','','','')
-		user2 = 'both'
-	if not('system' in locals()):
-		printout(verbose,'inputcheck','system','3','','','')
-		system = 3
-	if not('useratings' in locals()):
-		printout(verbose,'inputcheck','userating','use','','','')
-		useratings = 'use'
-	if not('tocompute' in locals()):
-		printout(verbose,'inputcheck','tocompute','10','','','')
-		tocompute = 10
-	if not('spreadchoice' in locals()):
-		printout(verbose,'inputcheck','spreadchoice','n','','','')
-		spreadchoice = 'n'
-	if not('outtxtchoice' in locals()):
-		printout(verbose,'inputcheck','outtxtchoice','n','','','')
-		outtxtchoice = 'n'
-	if not('outcsvchoice' in locals()):
-		printout(verbose,'inputcheck','outcsvchoice','n','','','')
-		outcsvchoice = 'n'
-	# return all 
-	return user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice
-
-############################
-def spreadcheck(spreadpath):
-	spreadyes = 0
-	# Arrays for bin midpoints and bin values:
-	spreadmidpt = []
-	spreadval = []
-	# Priority order is given by input array:
-	i = 0
-	while spreadyes == 0 and i < len(spreadpath):
-		pathspread = Path(spreadpath[i])
-		# If current path exists, use it:
-		if pathspread.exists():
-			spreadyes = 1
-			with open(spreadpath[i]) as csv_file:
-				csv_reader = csv.reader(csv_file, delimiter=' ')
-				for row in csv_reader:
-					spreadmidpt = spreadmidpt+[float(row[0])]
-					spreadval = spreadval+[int(row[1])]
-		i = i+1
-	return spreadyes,spreadmidpt,spreadval
-
-###############################################
-def printout(verbose,what,in1,in2,in3,in4,in5):
-	# Only print out if verbose = 1:
-	if verbose == 1:
-		if what == 'inputcheck':
-			print('\n'+in1+' not defined in input file, set to '+in2+' by default')
-		elif what == 'beginning':
-			print('\n**Note**')
-			print('For a fresh run, each user takes about 30 seconds to process.')
-			print('So, comparing two users takes about 1 minute.')
-			print('When comparing to following or followers, here are some estimations:')
-			print('      10 users = 5 minutes')
-			print('     100 users = 1 hour')
-			print('    1000 users = 8 hours')
-			print('These times will be greatly shortened if user film files already exist.')
-			print('\nSystems:')
-			print('1 = even difference points between 1 and 10')
-			print('2 = manual distribution in point differences by reddit user /u/d_anda')
-			print('3 = complex point system by aes, giving different points depending on actual ratings (RECOMMENDED)')
-		elif what == 'compare':
-			print('\nThe users being compared are '+in1+' and '+in2+'\n')
-		elif what == 'grab':
-			print('Grabbing all film ratings from '+in1+'\n')
-		elif what == 'noratings':
-			print(in1+' has no ratings!\n')
-		elif what == 'ratingsexist':
-			print('Using existing ratings file for '+in1+'!\n')
-		elif what == 'matching':
-			print('Finding matching films\n')
-		elif what == 'matched':
-			# Find longest username for a neat output:
-			longest = len(max([in1+' ratings:',in2+' ratings:','matched films:'],key=len))
-			print('{:{longest}} {:d}'.format(in1+' ratings:',in3,longest=longest))
-			print('{:{longest}} {:d}'.format(in2+' ratings:',in4,longest=longest))
-			print('{:{longest}} {:d}{}'.format('matched films:',len(in5),'\n',longest=longest))
-		elif what == 'useruserresults':
-			print('RESULTS = {:.3f}{}'.format(in1,'\n'))
-			print('MATCH RATING = '+ratinginterpretation(in2,in1,in3,in4)+'\n')
-		elif what == 'nomatches':
-			print('No film matches found.'+in1)
-		elif what == 'nofilms':
-			print('No films to match.\n')
-		elif what == 'userusertime':
-			print('Total time (s) = {:.3f}{}'.format(in1,'\n'))
-		elif what == 'userotherbegin':
-			if in1 == 'following':
-				print('\nGrabbing all users that '+in2+' is following\n')
-			elif in1 == 'followers':
-				print('\nGrabbing all users that follow '+in2+'\n')
-			elif in1 == 'both':
-				print('\nGrabbing all users that both follow '+in2+' and who '+in2+' is following\n')
-		elif what == 'usernum':
-			print('There are '+str(len(in1)))
-		elif what == 'filmgrab':
-			print('\nGrabbing all film ratings from '+in1+'\n')
-		elif what == 'usercompare':
-			print('Comparing with '+in1+' ('+str(in2)+'/'+str(len(in3))+')')
-		elif what == 'userotherresults':
-			print('compatibility: {:.5f}'.format(in1))
-			print('match rating = '+in2)
-		elif what == 'timeelapsed':
-			print('time elapsed (m) = {:.3f}'.format(in1))
-		elif what == 'timeestimate':
-			print('estimated time remaining (m) = {:.3f}{}'.format(in1,'\n'))
-		elif what == 'userothercompare':
-			if in1 == 'both':
-				print('Comparing '+in2+' following and followers\n')
-			else:
-				print('Comparing '+in2+' '+in1+'\n')
-		elif what == 'userothermatched':
-			# Find longest username for a neat output:
-			longest = len(max(in1,key=len))
-			for i in range(len(in1)):
-				print('{:{longest}} -- {:8.5f} -- {}'.format(in1[i],in2[i],in3[i],longest=longest))
-		elif what == 'userothertime':
-			print('{}Total time (m) = {:.3f}{}'.format('\n',in1,'\n'))
-		elif what == 'previousspread':
-			print('Previous spread found\n')
-		elif what == 'previoustext':
-			print('Previous text output found\n')
-		elif what == 'previouscsv':
-			print('Previous CSV output found\n')
-
-####################################################################################
-def useruser(verbose,user1,user2,useratings,system,spreadyes,spreadmidpt,spreadval):
-	printout(verbose,'compare',user1,user2,'','','')
-	flag = 0
-	# Working on user1:
-	printout(verbose,'grab',user1,'','','','')
-	films1,ratings1 = userfilms(verbose,user1,useratings)
-	# If no ratings found:
-	if films1[0] == '-1' and ratings1[0] == -1:
-		printout(verbose,'noratings',user1,'','','','')
-		flag = 1
-	# Working on user2:
-	printout(verbose,'grab',user2,'','','','')
-	films2,ratings2 = userfilms(verbose,user2,useratings)
-	# If no ratings found:
-	if films2 == '-1' and ratings2 == -1:
-		printout(verbose,'noratings',user2,'','','','')
-		flag = 1
-	# Find all matching films, if both users had ratings:
-	if flag == 0:
-		printout(verbose,'matching','','','','','')
-		# Preserve original list lengths:
-		oglength1 = len(films1)
-		oglength2 = len(films2)
-		finalfilms,finalratings1,finalratings2 = filmmatch(films1,ratings1,films2,ratings2)
-		if finalfilms[0] == '-1' and finalratings1[0] == -1 and finalratings2[0] == -1:
-			finalfilms = []
-		# Print out details:
-		printout(verbose,'matched',user1,user2,oglenth1,oglength2,finalfilms)
-		# Get the similarity score and print results, if there are any:
-		if len(finalfilms) > 0:
-			results = scoring(finalfilms,finalratings1,finalratings2,system)
-			printout(verbose,'useruserresults',results,spreadyes,spreadmidpt,spreadval,'')
-		# Otherwise no score to get:
-		else:
-			printout(verbose,'nomatches','\n','','','','')
-	# Otherwise nothing to do:
-	else:
-		printout(verbose,'nofilms','','','','','')
-
-	# Print final timing:
-	totaltime = datetime.now().timestamp()-starttime
-	printout(verbose,'userusertime',totaltime,'','','','')
-
 #####################################################################################
 def userother(verbose,starttime,user1,user2,tocompute,useratings,system,spreadyes,spreadmidpt,spreadval,spreadchoice,outtxtchoice,outcsvchoice):
 	printout(verbose,'userotherbegin',user2,user1,'','','')
@@ -954,36 +1036,6 @@ def userother(verbose,starttime,user1,user2,tocompute,useratings,system,spreadye
 			csvwriter = csv.writer(outfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 			for i in range(len(sortedusers)):
 				csvwriter.writerow([sortedusers[i],scores[i],sortedinterpretations[i]])
-
-########################
-def mainprogram(inputs):
-	# Grabs values entered through execution, i.e. >>python user_film_compare.py input.txt 1
-	# For an input file called 'input.txt' and verbose = 1 (print out info)
-	inputfile = inputs[1]
-	verbose = int(inputs[2])
-	# Make sure inputs are valid:
-	inpath = Path(inputfile)
-	if not(inpath.exists()):
-		sys.exit('ERROR - in main program - Input file does not exist')
-	if verbose != 0 and verbose != 1:
-		sys.exit('ERROR - in main program - Verbose not 0 or 1')
-	# Read in input file:
-	user1,user2,system,useratings,tocompute,spreadchoice,outtxtchoice,outcsvchoice = inputread(verbose,inputfile)
-	# Print beginning text:
-	printout(verbose,'beginning','','','','','')
-	# Start timing:
-	starttime = datetime.now().timestamp()
-	# Check for a prior spread file:
-	spreadboth = 'Spreads/'+user1+'_both_'+str(system)+'_spread.txt'
-	spreadfollowing = 'Spreads/'+user1+'_following_'+str(system)+'_spread.txt'
-	spreadfollowers = 'Spreads/'+user1+'_followers_'+str(system)+'_spread.txt'
-	spreadyes,spreadmidpt,spreadval = spreadcheck([spreadboth,spreadfollowing,spreadfollowers])
-	# If just two users are being compared:
-	if user2 != 'following' and user2 != 'followers' and user2 != 'both':
-		useruser(verbose,user1,user2,useratings,system,spreadyes,spreadmidpt,spreadval)
-	# Else go through following or followers or both:
-	else:
-		userother(verbose,starttime,user1,user2,tocompute,useratings,system,spreadyes,spreadmidpt,spreadval,spreadchoice,outtxtchoice,outcsvchoice)
 
 #########################
 #### RUN THE PROGRAM ####

@@ -5,7 +5,8 @@
 # "tocompute = 10" can be set to any desired number
 
 # Letterboxd username 1:
-user1 = moogic
+#user1 = moogic
+user1 = thediegoandaluz
 
 # Letterboxd username 2,
 # or go through all of who username 1 is following,
@@ -18,12 +19,12 @@ user2 = both
 
 # Similarity scoring system to use (1, 2, or 3):
 #system = 1
-#system = 2
-system = 3
+system = 2
+#system = 3
 
 # Use previous saved user ratings, or create new ones? (use or new):
-useratings = use
-#useratings = new
+#useratings = use
+useratings = new
 
 # If using following or followers, the number to compute, or 'all':
 tocompute = all

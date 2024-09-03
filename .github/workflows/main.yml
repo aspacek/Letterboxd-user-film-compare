@@ -109,31 +109,31 @@ jobs:
         pip install -r requirements.txt
 
     # Grab the needed outputs:
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_user_1_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_user_2_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_user_3_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_following_1_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_following_2_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_following_3_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_followers_1_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_followers_2_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_test_user_followers_3_${{ matrix.python-version }}
 
@@ -211,31 +211,31 @@ jobs:
         pip install -r requirements.txt
 
     # Grab the needed outputs:
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_user_1_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_user_2_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_user_3_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_following_1_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_following_2_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_following_3_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_followers_1_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_followers_2_${{ matrix.python-version }}
-    - uses: actions/download-artifact@v1
+    - uses: actions/download-artifact@v4.1.7
       with:
         name: CI_output_user_followers_3_${{ matrix.python-version }}
 
